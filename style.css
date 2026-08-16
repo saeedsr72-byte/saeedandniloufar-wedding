@@ -31,14 +31,23 @@ button,input,select,textarea{font:inherit}
 @media(max-width:760px){.section{padding:95px 20px}.site-nav{top:12px;padding:0 14px}.nav-brand,.lang-toggle{height:40px;min-width:76px}.nav-brand img{height:28px}.hero{min-height:100svh}.hero h1{font-size:35px}.date-grid strong{font-size:34px}.date-grid>div{padding:30px 8px}.date-grid span{font-size:11px}.venue-inner{grid-template-columns:1fr;gap:35px}.venue-photo{height:430px}.photo-flow{grid-template-columns:1fr}.photo-blend:first-child{grid-column:auto}.count-grid{grid-template-columns:repeat(2,1fr)}.count-grid>div:nth-child(2){border-left:0}.ornament-seal{width:245px;height:245px}.gate-title{font-size:26px}.gate-sub{font-size:13px}.gate.split .seal-left{transform:translateX(-62vw) rotate(-14deg)}.gate.split .seal-right{transform:translateX(62vw) rotate(14deg)}.modal-card{padding:32px 18px}.modal-card h2{font-size:29px}.story-vines{opacity:.42}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal,.reveal.visible{transition:none;transform:none;opacity:1}.gate,.seal-ornament{transition:none}.story-vines{display:none}}
 
-/* V6 botanical assets: no CSS-drawn vines. The creepers are external illustrated SVG artwork. */
-.story-vines{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;opacity:1;overflow:hidden}
-.vine-asset{position:absolute;top:0;height:100%;width:min(12vw,135px);overflow:hidden;will-change:clip-path;clip-path:inset(0 0 100% 0)}
-.vine-asset img{display:block;width:100%;height:100%;object-fit:fill;opacity:.78;filter:drop-shadow(0 1px 2px rgba(43,31,20,.14))}
-.vine-left{left:0}.vine-right{right:0}
-.vine-merge-glow{position:absolute;left:50%;bottom:28px;width:180px;height:110px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(221,190,125,.18),transparent 68%);opacity:0;transition:opacity .8s ease}
-.vine-lotus{position:absolute;left:50%;bottom:0;width:min(210px,34vw);height:auto;transform:translate(-50%,28px) scale(.72);opacity:0;filter:drop-shadow(0 5px 9px rgba(46,34,22,.2));transition:opacity .9s ease,transform 1s cubic-bezier(.2,.8,.2,1)}
-.story-vines.vines-finished .vine-merge-glow{opacity:1}.story-vines.vines-finished .vine-lotus{opacity:1;transform:translate(-50%,0) scale(1)}
+/* V8.1 — keep the existing thin edge vines, but let them converge only after the last photo. */
+.story-vines{position:absolute !important;left:0 !important;right:auto !important;top:0;width:100% !important;height:0;pointer-events:none;z-index:4;overflow:visible !important;opacity:1 !important}
+.vine-asset{position:absolute !important;top:0 !important;height:100% !important;width:min(13vw,82px) !important;min-width:48px !important;max-width:82px !important;overflow:hidden !important;clip-path:inset(0 0 100% 0);will-change:clip-path,transform}
+.vine-asset img{display:block;width:100% !important;height:100% !important;object-fit:fill !important;opacity:.64 !important;filter:none !important}
+.vine-left{left:0 !important;right:auto !important;transform-origin:12% 100%}
+.vine-right{right:0 !important;left:auto !important;transform-origin:88% 100%}
+.vine-merge-glow,.vine-lotus{display:none !important}
+/* During the final approach, the already-revealed stems travel inward very gently. */
+.vine-left.is-converging{transform:translateX(var(--vine-shift,0px)) rotate(-1.2deg)}
+.vine-right.is-converging{transform:translateX(calc(var(--vine-shift,0px) * -1)) rotate(1.2deg)}
+
+/* The English date is intentionally clean: no mixed Persian/English label in the time column. */
+[dir="ltr"] .date-grid{direction:ltr}
+[dir="ltr"] .date-grid>div{border-left:0;border-right:1px solid #c9bdae}
+[dir="ltr"] .date-grid>div:last-child{border-right:0}
+[dir="ltr"] .date-grid span,[dir="ltr"] .date-grid small{font-family:"DM Sans",sans-serif;letter-spacing:.1em}
+[dir="ltr"] .date-grid strong{white-space:nowrap}
 /* Gate: real fingerprint artwork split into two halves, surrounded by a minimal S&N botanical ornament. */
 .opening-emblem{overflow:visible}
 /* Real fingerprint artwork: HTML images inside SVG foreignObject so the split is reliable on mobile browsers. */
@@ -170,10 +179,10 @@ button,input,select,textarea{font:inherit}
   max-width:82px !important;
   overflow:hidden !important;
   clip-path:inset(0 0 100% 0);
-  will-change:clip-path;
+  will-change:clip-path,transform;
 }
-.vine-left{left:0 !important;right:auto !important}
-.vine-right{right:0 !important;left:auto !important}
+.vine-left{left:0 !important;right:auto !important;transform-origin:12% 100%}
+.vine-right{right:0 !important;left:auto !important;transform-origin:88% 100%}
 .vine-asset img{
   display:block;
   width:100% !important;
@@ -206,6 +215,8 @@ button,input,select,textarea{font:inherit}
     max-width:62px !important;
   }
   .vine-asset img{opacity:.58 !important}
+  .vine-left.is-converging{transform:translateX(var(--vine-shift,0px)) rotate(-1deg)}
+  .vine-right.is-converging{transform:translateX(calc(var(--vine-shift,0px) * -1)) rotate(1deg)}
 }
 
 @media(prefers-reduced-motion:reduce){

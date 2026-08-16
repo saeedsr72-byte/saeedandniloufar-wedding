@@ -194,15 +194,18 @@
     document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
   }
 
-  // Botanical vines: start at A FEW MOMENTS, stay on the outer edges,
-  // then naturally converge only after the gallery. The SVG artwork itself
-  // contains the final gentle crossing/knot, so no CSS-drawn fake lines are used.
+  // Botanical vines — start EXACTLY at the bottom of the last full-bleed photo.
+  // They stay on the outer edges through the photo sequence. Only after the
+  // final photo do the two sides slowly travel inward and finish together
+  // before the OUR STORY section. No flower is introduced in this step.
   const vineScene = document.querySelector('.story-vines');
   const vineAssets = Array.from(document.querySelectorAll('.vine-asset'));
 
   if (vineScene && vineAssets.length) {
-    const gallery = document.querySelector('.gallery');
+    const lastPhoto = document.querySelector('.gallery .photo-blend:last-child');
+    const storyEnding = document.querySelector('.story-ending');
     let startY = 0;
+    let convergeStartY = 1;
     let endY = 1;
     let raf = 0;
 
@@ -212,28 +215,47 @@
     };
 
     const layoutVines = () => {
-      if (!gallery) return;
-      startY = Math.max(0, pageY(gallery));
-      // Give the vines a quiet tail after the last gallery image so the
-      // convergence/knot happens below the photographs, not over them.
-      const tail = Math.max(420, Math.min(620, window.innerHeight * 1.05));
-      endY = startY + gallery.offsetHeight + tail;
+      if (!lastPhoto || !storyEnding) return;
+
+      // Start at the bottom edge of the photo that precedes A FEW MOMENTS.
+      const firstPhoto = document.querySelectorAll('.story-image.full-bleed')[1];
+      startY = firstPhoto
+        ? pageY(firstPhoto) + firstPhoto.offsetHeight
+        : pageY(lastPhoto);
+
+      // Do not move inward until the final gallery image has completely passed.
+      convergeStartY = pageY(lastPhoto) + lastPhoto.offsetHeight;
+
+      // Finish the convergence near the bottom of OUR STORY, before countdown.
+      endY = pageY(storyEnding) + Math.min(storyEnding.offsetHeight * .82, window.innerHeight * 1.05);
+      if (endY <= convergeStartY) endY = convergeStartY + Math.max(360, window.innerHeight * .75);
+
       vineScene.style.top = `${startY}px`;
       vineScene.style.height = `${Math.max(1, endY - startY)}px`;
     };
 
     const updateVines = () => {
       raf = 0;
-      const viewportLead = window.innerHeight * .72;
-      const p = Math.max(0, Math.min(1,
-        (window.scrollY + viewportLead - startY) / Math.max(1, endY - startY)
+      const lead = window.innerHeight * .68;
+      const revealP = Math.max(0, Math.min(1,
+        (window.scrollY + lead - startY) / Math.max(1, endY - startY)
       ));
 
-      // Reveal is deliberately slow and smooth. Both sides remain at the
-      // edges because the SVGs themselves do the final inward turn.
+      const convergeP = Math.max(0, Math.min(1,
+        (window.scrollY + lead - convergeStartY) / Math.max(1, endY - convergeStartY)
+      ));
+
+      // Reveal the original SVG artwork exactly as before.
       vineAssets.forEach((asset, index) => {
-        const local = Math.max(0, Math.min(1, p * 1.025 - index * .012));
+        const local = Math.max(0, Math.min(1, revealP * 1.025 - index * .012));
         asset.style.clipPath = `inset(0 0 ${((1 - local) * 100).toFixed(2)}% 0)`;
+
+        // 0 until the last image is gone, then a very restrained inward drift.
+        const eased = convergeP * convergeP * (3 - 2 * convergeP);
+        const edgeGap = Math.min(41, window.innerWidth * .065);
+        const shift = eased * Math.max(0, window.innerWidth * .5 - edgeGap);
+        asset.style.setProperty('--vine-shift', `${shift.toFixed(1)}px`);
+        asset.classList.toggle('is-converging', convergeP > 0.005);
       });
     };
 
