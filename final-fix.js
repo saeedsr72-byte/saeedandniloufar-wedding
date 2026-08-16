@@ -1,89 +1,104 @@
-/* S&N FINAL POLISH — mobile-safe fingerprint gate.
-   Replaces only the SVG foreignObject rendering; the existing click/audio/split logic stays intact. */
+/* S&N V7 FINAL FIX — additive only.
+   Does not replace the working V6 RSVP, language, countdown or audio logic. */
 (() => {
+  'use strict';
+
+  /* ---------------------------------------------------------
+     A. Fingerprint gate
+     --------------------------------------------------------- */
+  const gate = document.getElementById('gate');
   const button = document.getElementById('openInvitation');
-  const svg = button?.querySelector('.opening-emblem');
-  if (!button || !svg) return;
+  const emblem = button?.querySelector('.opening-emblem');
 
-  const wrap = document.createElement('div');
-  wrap.className = 'gate-fingerprint-safe';
-  wrap.setAttribute('aria-hidden', 'true');
+  if (gate && button && emblem && !button.querySelector('.gate-fingerprint-safe')) {
+    const stage = document.createElement('div');
+    stage.className = 'gate-fingerprint-safe';
+    stage.setAttribute('aria-hidden', 'true');
 
-  const left = document.createElement('div');
-  left.className = 'gate-fp-half gate-fp-left';
-  const right = document.createElement('div');
-  right.className = 'gate-fp-half gate-fp-right';
+    const left = document.createElement('div');
+    left.className = 'gate-fp-half gate-fp-left';
+    const right = document.createElement('div');
+    right.className = 'gate-fp-half gate-fp-right';
 
-  const a = document.createElement('img');
-  const b = document.createElement('img');
-  a.src = 'fingerprint-seal.png';
-  b.src = 'fingerprint-seal.png';
-  a.alt = '';
-  b.alt = '';
-  left.appendChild(a);
-  right.appendChild(b);
-  wrap.append(left, right);
+    const leftImg = document.createElement('img');
+    const rightImg = document.createElement('img');
+    leftImg.src = 'fingerprint-seal.png';
+    rightImg.src = 'fingerprint-seal.png';
+    leftImg.alt = '';
+    rightImg.alt = '';
 
-  svg.style.display = 'none';
-  button.insertBefore(wrap, button.querySelector('.gate-hint'));
+    left.appendChild(leftImg);
+    right.appendChild(rightImg);
+    stage.append(left, right);
+    button.insertBefore(stage, emblem);
 
-  // Let the existing gate animation drive these two real HTML halves.
-  const sync = () => {
-    const split = document.getElementById('gate')?.classList.contains('split');
-    wrap.classList.toggle('split', !!split);
-  };
-  const observer = new MutationObserver(sync);
-  observer.observe(document.getElementById('gate'), {attributes:true, attributeFilter:['class']});
-  sync();
-})();
+    const syncFingerprint = () => {
+      stage.classList.toggle('split', gate.classList.contains('split'));
+    };
 
+    const observer = new MutationObserver(syncFingerprint);
+    observer.observe(gate, { attributes:true, attributeFilter:['class'] });
+    syncFingerprint();
+  }
 
-/* S&N FINAL POLISH — vine timing only. Loaded after script.js. */
-(() => {
+  /* ---------------------------------------------------------
+     B. Botanical vines
+     --------------------------------------------------------- */
   const scene = document.querySelector('.story-vines');
-  const left = document.querySelector('.vine-left');
-  const right = document.querySelector('.vine-right');
-  const startEl = document.querySelector('.gallery');
-  const endEl = document.querySelector('.closing');
-  if (!scene || !left || !right || !startEl || !endEl) return;
+  const leftVine = document.querySelector('.vine-left');
+  const rightVine = document.querySelector('.vine-right');
+  const gallery = document.querySelector('.gallery');
+  const flower = document.querySelector('.vine-lotus');
 
-  let startY = 0;
-  let endY = 1;
+  if (scene && leftVine && rightVine && gallery) {
+    // Use the real lotus asset already supplied with the project.
+    if (flower) flower.src = 'lotus-real-transparent.png';
 
-  function pageY(el) {
-    const r = el.getBoundingClientRect();
-    return r.top + window.scrollY;
+    let startY = 0;
+    let endY = 1;
+    let raf = 0;
+
+    const pageY = (el) => {
+      const rect = el.getBoundingClientRect();
+      return rect.top + window.scrollY;
+    };
+
+    const layout = () => {
+      startY = Math.max(0, pageY(gallery));
+      // The vines finish shortly after the final gallery image. This prevents
+      // them from running through the countdown/RSVP and prevents empty tail space.
+      endY = startY + gallery.offsetHeight + Math.min(560, Math.max(360, window.innerHeight * .72));
+      scene.style.top = `${startY}px`;
+      scene.style.height = `${Math.max(1, endY - startY)}px`;
+    };
+
+    const update = () => {
+      raf = 0;
+      const revealStart = startY - window.innerHeight * .08;
+      const revealEnd = endY;
+      const p = Math.max(0, Math.min(1, (window.scrollY + window.innerHeight * .70 - revealStart) / Math.max(1, revealEnd - revealStart)));
+
+      // Slightly stagger the two sides so the convergence does not look mirrored.
+      const lp = Math.max(0, Math.min(1, p * 1.035));
+      const rp = Math.max(0, Math.min(1, p * 1.035 - .025));
+
+      leftVine.style.clipPath = `inset(0 0 ${((1-lp)*100).toFixed(2)}% 0)`;
+      rightVine.style.clipPath = `inset(0 0 ${((1-rp)*100).toFixed(2)}% 0)`;
+      scene.classList.toggle('vines-finished', p >= .965);
+    };
+
+    const requestUpdate = () => {
+      if (!raf) raf = window.requestAnimationFrame(update);
+    };
+
+    const refresh = () => {
+      layout();
+      update();
+    };
+
+    refresh();
+    window.addEventListener('load', refresh, { once:true });
+    window.addEventListener('resize', refresh, { passive:true });
+    window.addEventListener('scroll', requestUpdate, { passive:true });
   }
-
-  function layout() {
-    startY = pageY(startEl);
-    endY = Math.max(startY + 1, pageY(endEl) + endEl.offsetHeight);
-    scene.style.top = `${startY}px`;
-    scene.style.height = `${endY - startY}px`;
-    scene.style.bottom = 'auto';
-  }
-
-  function update() {
-    const y = window.scrollY + window.innerHeight * 0.72;
-    const p = Math.max(0, Math.min(1, (y - startY) / (endY - startY)));
-
-    // The two creepers reveal from the edges only after A FEW MOMENTS.
-    const leftP = Math.max(0, Math.min(1, p * 1.08));
-    const rightP = Math.max(0, Math.min(1, p * 1.08 - 0.025));
-
-    left.style.clipPath = `inset(0 0 ${((1-leftP)*100).toFixed(2)}% 0)`;
-    right.style.clipPath = `inset(0 0 ${((1-rightP)*100).toFixed(2)}% 0)`;
-
-    scene.classList.toggle('vines-finished', p > 0.965);
-  }
-
-  function refresh() {
-    layout();
-    update();
-  }
-
-  refresh();
-  window.addEventListener('load', refresh, {once:true});
-  window.addEventListener('resize', refresh, {passive:true});
-  window.addEventListener('scroll', update, {passive:true});
 })();

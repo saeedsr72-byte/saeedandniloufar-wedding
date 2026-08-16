@@ -1,74 +1,58 @@
+/* S&N V7 POLISH — additive patch only. Keep the working V6 HTML/JS/RSVP/music intact. */
 
-
-/* FINAL POLISH — keep the working V6 layout, remove only the elements that were
-   causing the current screenshot problems. */
+/* 1) The small floating logo is artwork, not a button/card. */
 .nav-brand{
-  min-width:0;
-  width:auto;
-  height:auto;
-  padding:2px;
-  border:0;
-  background:transparent;
-  box-shadow:none;
-  backdrop-filter:none;
-  -webkit-backdrop-filter:none;
+  pointer-events:auto;
+  min-width:0 !important;
+  width:auto !important;
+  height:auto !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
 }
 .nav-brand img{
-  height:28px;
+  display:block;
   width:auto;
+  height:27px;
   filter:brightness(.72);
 }
 
-/* Hero mark: smaller and slightly lower, without changing the hero composition. */
+/* 2) Hero logo: only a small nudge from the already-correct position. */
 .hero-content .hero-logo{
-  width:min(118px,27vw);
-  margin-top:20px;
-  margin-bottom:18px;
+  width:min(106px,25vw) !important;
+  margin-top:16px !important;
+  margin-bottom:18px !important;
+  transform:translateY(10px);
 }
 
-/* Do not let the decorative layer create any extra document height. */
-.story-vines{
-  height:100%;
-  max-height:100%;
-  overflow:hidden;
+/* 3) Real fingerprint artwork — no CSS drawing, no SVG foreignObject. */
+.opening-emblem .fingerprint-fo{
+  display:none !important;
 }
-
-/* Keep the vines subtle and close to the page edges. */
-.vine-asset{
-  width:min(9vw,82px);
-}
-.vine-asset img{
-  opacity:.62;
-}
-
-/* Never create a phantom empty tail after the final section. */
-#site{
-  min-height:0 !important;
-  height:auto !important;
-}
-.closing{
-  min-height:0 !important;
-}
-
-
-/* Mobile-safe fingerprint gate replacement. */
 .gate-fingerprint-safe{
   position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  overflow:visible;
+  left:50%;
+  top:50%;
+  width:292px;
+  height:292px;
+  transform:translate(-50%,-50%);
+  z-index:1;
   pointer-events:none;
+  overflow:visible;
 }
 .gate-fp-half{
   position:absolute;
-  top:50%;
-  width:50%;
+  top:0;
+  width:146px;
   height:292px;
-  transform:translateY(-50%);
   overflow:hidden;
-  transition:transform 2.45s cubic-bezier(.18,.72,.16,1),opacity 1.95s ease;
+  transition:transform 2.55s cubic-bezier(.16,.74,.12,1),opacity 1.95s ease;
   will-change:transform,opacity;
+  filter:drop-shadow(0 12px 9px rgba(0,0,0,.38));
 }
 .gate-fp-half img{
   position:absolute;
@@ -78,17 +62,97 @@
   max-width:none;
   display:block;
 }
-.gate-fp-left{left:0;clip-path:inset(0 0 0 0)}
+.gate-fp-left{left:0}
 .gate-fp-left img{left:0}
-.gate-fp-right{right:0;clip-path:inset(0 0 0 0)}
-.gate-fp-right img{right:0}
-.gate-fingerprint-safe.split .gate-fp-left,
-.gate.split .gate-fingerprint-safe .gate-fp-left{
-  transform:translate(-70vw,-50%) rotate(-12deg);
+.gate-fp-right{right:0}
+.gate-fp-right img{left:-146px}
+.gate-fingerprint-safe.split .gate-fp-left{
+  transform:translateX(calc(-70vw - 18px)) rotate(-10deg);
   opacity:0;
 }
-.gate-fingerprint-safe.split .gate-fp-right,
-.gate.split .gate-fingerprint-safe .gate-fp-right{
-  transform:translate(70vw,-50%) rotate(12deg);
+.gate-fingerprint-safe.split .gate-fp-right{
+  transform:translateX(calc(70vw + 18px)) rotate(10deg);
   opacity:0;
+}
+
+/* The surrounding ornament disappears a fraction later, leaving the fingerprint
+   itself as the final visual beat. */
+.gate.split .seal-botanical{
+  transform:scale(1.08);
+  opacity:0;
+  transition:transform 2.1s cubic-bezier(.16,.74,.12,1),opacity 1.25s ease;
+}
+.gate.split .sparkles{opacity:0 !important;transition:opacity .9s ease}
+
+/* 4) Vines: use the supplied illustrated SVG artwork, very thin and close to the edges.
+   The wrapper is positioned by JS from A FEW MOMENTS to just below the final gallery. */
+.story-vines{
+  position:absolute !important;
+  left:0 !important;
+  right:auto !important;
+  top:0;
+  width:100% !important;
+  height:0;
+  inset-block-start:auto;
+  pointer-events:none;
+  z-index:4;
+  overflow:visible !important;
+  opacity:1 !important;
+}
+.vine-asset{
+  position:absolute !important;
+  top:0 !important;
+  height:100% !important;
+  width:min(50vw,520px) !important;
+  min-width:0 !important;
+  max-width:none !important;
+  overflow:hidden !important;
+  clip-path:inset(0 0 100% 0);
+  will-change:clip-path;
+}
+.vine-left{left:0 !important;right:auto !important}
+.vine-right{right:0 !important;left:auto !important}
+.vine-asset img{
+  display:block;
+  width:100% !important;
+  height:100% !important;
+  object-fit:fill !important;
+  opacity:.42 !important;
+  filter:none !important;
+}
+.vine-merge-glow{display:none !important}
+
+/* Real flower asset supplied in the project, not a CSS/SVG flower shape. */
+.vine-lotus{
+  left:50% !important;
+  bottom:-10px !important;
+  width:min(150px,28vw) !important;
+  height:auto !important;
+  transform:translate(-50%,22px) scale(.82) !important;
+  opacity:0 !important;
+  filter:drop-shadow(0 5px 9px rgba(46,34,22,.16));
+  transition:opacity 1.15s ease,transform 1.25s cubic-bezier(.2,.8,.2,1);
+}
+.story-vines.vines-finished .vine-lotus{
+  opacity:.94 !important;
+  transform:translate(-50%,0) scale(1) !important;
+}
+
+/* Do not let the decorative layer create document height. */
+#site{min-height:0 !important}
+
+@media(max-width:760px){
+  .nav-brand img{height:25px}
+  .hero-content .hero-logo{width:94px !important;margin-top:12px !important;transform:translateY(12px)}
+  .gate-fingerprint-safe{width:250px;height:250px}
+  .gate-fp-half{width:125px;height:250px}
+  .gate-fp-half img{width:250px;height:250px}
+  .gate-fp-right img{left:-125px}
+  .vine-asset{width:50vw !important}
+  .vine-asset img{opacity:.34 !important}
+  .vine-lotus{width:min(122px,31vw) !important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .gate-fp-half,.vine-lotus{transition:none !important}
 }
