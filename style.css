@@ -58,3 +58,156 @@ button,input,select,textarea{font:inherit}
   .gate.split .fingerprint-left-fo{transform:translateX(-70vw) rotate(-12deg)}
   .gate.split .fingerprint-right-fo{transform:translateX(70vw) rotate(12deg)}
 }
+
+/* =========================================================
+   FINAL MOBILE-FIRST POLISH — S&N WEDDING
+   Keep the existing structure; only fix the visual pieces
+   that were previously patched but not loaded by index.html.
+   ========================================================= */
+
+/* The floating NS mark is artwork only — never a pill, card or button. */
+.site-nav .nav-brand{
+  pointer-events:auto !important;
+  width:auto !important;
+  min-width:0 !important;
+  height:auto !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.site-nav .nav-brand img{
+  display:block !important;
+  width:auto !important;
+  height:27px !important;
+  object-fit:contain;
+  filter:brightness(.72);
+}
+
+/* Keep the language control as a pill; only the NS logo is free-floating. */
+.site-nav .lang-toggle{
+  pointer-events:auto;
+}
+
+/* Hero mark: smaller and slightly lower, without changing the composition. */
+.hero-content .hero-logo{
+  width:min(92px,21vw) !important;
+  margin-top:24px !important;
+  margin-bottom:14px !important;
+  transform:translateY(10px);
+}
+
+/* Opening screen: use the supplied real Design-04 fingerprint as-is.
+   The old SVG/Yin-Yang ornament is hidden; the image itself is split. */
+.opening-emblem{
+  display:none !important;
+}
+.gate-fingerprint-safe{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:292px;
+  height:292px;
+  transform:translate(-50%,-50%);
+  z-index:1;
+  pointer-events:none;
+  overflow:visible;
+}
+.gate-fp-half{
+  position:absolute;
+  top:0;
+  width:146px;
+  height:292px;
+  overflow:hidden;
+  will-change:transform,opacity;
+  transition:transform 2.75s cubic-bezier(.16,.74,.12,1), opacity 1.9s ease;
+  filter:drop-shadow(0 12px 9px rgba(0,0,0,.36));
+}
+.gate-fp-half img{
+  position:absolute;
+  top:0;
+  width:292px;
+  height:292px;
+  max-width:none;
+  display:block;
+}
+.gate-fp-left{left:0}
+.gate-fp-left img{left:0}
+.gate-fp-right{right:0}
+.gate-fp-right img{left:-146px}
+.gate-fingerprint-safe.split .gate-fp-left{
+  transform:translateX(calc(-70vw - 18px)) rotate(-10deg);
+  opacity:0;
+}
+.gate-fingerprint-safe.split .gate-fp-right{
+  transform:translateX(calc(70vw + 18px)) rotate(10deg);
+  opacity:0;
+}
+
+/* Vines: extremely thin, quiet, organic, always hugging the page edges. */
+.story-vines{
+  position:absolute !important;
+  left:0 !important;
+  right:auto !important;
+  top:0;
+  width:100% !important;
+  height:0;
+  pointer-events:none;
+  z-index:4;
+  overflow:visible !important;
+  opacity:1 !important;
+}
+.vine-asset{
+  position:absolute !important;
+  top:0 !important;
+  height:100% !important;
+  width:min(13vw,82px) !important;
+  min-width:48px !important;
+  max-width:82px !important;
+  overflow:hidden !important;
+  clip-path:inset(0 0 100% 0);
+  will-change:clip-path;
+}
+.vine-left{left:0 !important;right:auto !important}
+.vine-right{right:0 !important;left:auto !important}
+.vine-asset img{
+  display:block;
+  width:100% !important;
+  height:100% !important;
+  object-fit:fill !important;
+  opacity:.64 !important;
+  filter:none !important;
+}
+.vine-merge-glow{display:none !important}
+.vine-lotus{display:none !important}
+
+/* No decorative layer is allowed to increase the document's height. */
+#site{min-height:0 !important}
+
+@media(max-width:760px){
+  .site-nav .nav-brand img{height:25px !important}
+  .hero-content .hero-logo{
+    width:78px !important;
+    margin-top:22px !important;
+    margin-bottom:12px !important;
+    transform:translateY(12px);
+  }
+  .gate-fingerprint-safe{width:250px;height:250px}
+  .gate-fp-half{width:125px;height:250px}
+  .gate-fp-half img{width:250px;height:250px}
+  .gate-fp-right img{left:-125px}
+  .vine-asset{
+    width:13vw !important;
+    min-width:46px !important;
+    max-width:62px !important;
+  }
+  .vine-asset img{opacity:.58 !important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .gate-fp-half{transition:none !important}
+}

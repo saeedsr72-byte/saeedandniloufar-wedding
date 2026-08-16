@@ -100,6 +100,40 @@
   });
 
   openButton.addEventListener('click', openInvitation, { passive: true });
+  // Use the exact supplied fingerprint artwork and split the image itself.
+  // This avoids SVG foreignObject rendering differences on mobile browsers.
+  const fingerprintButton = document.getElementById('openInvitation');
+  const fingerprintGate = document.getElementById('gate');
+  if (fingerprintButton && fingerprintGate && !fingerprintButton.querySelector('.gate-fingerprint-safe')) {
+    const stage = document.createElement('div');
+    stage.className = 'gate-fingerprint-safe';
+    stage.setAttribute('aria-hidden', 'true');
+
+    const left = document.createElement('div');
+    const right = document.createElement('div');
+    left.className = 'gate-fp-half gate-fp-left';
+    right.className = 'gate-fp-half gate-fp-right';
+
+    const leftImg = document.createElement('img');
+    const rightImg = document.createElement('img');
+    leftImg.src = 'fingerprint-seal.png';
+    rightImg.src = 'fingerprint-seal.png';
+    leftImg.alt = '';
+    rightImg.alt = '';
+
+    left.appendChild(leftImg);
+    right.appendChild(rightImg);
+    stage.append(left, right);
+    fingerprintButton.appendChild(stage);
+
+    const syncFingerprint = () => {
+      stage.classList.toggle('split', fingerprintGate.classList.contains('split'));
+    };
+    const fpObserver = new MutationObserver(syncFingerprint);
+    fpObserver.observe(fingerprintGate, { attributes:true, attributeFilter:['class'] });
+    syncFingerprint();
+  }
+
   // Fallback for touch/click implementations that behave differently on older mobile browsers.
   openButton.onclick = openInvitation;
 
@@ -160,27 +194,63 @@
     document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
   }
 
-  // Botanical vine artwork reveals from both edges as the page scrolls.
+  // Botanical vines: start at A FEW MOMENTS, stay on the outer edges,
+  // then naturally converge only after the gallery. The SVG artwork itself
+  // contains the final gentle crossing/knot, so no CSS-drawn fake lines are used.
   const vineScene = document.querySelector('.story-vines');
   const vineAssets = Array.from(document.querySelectorAll('.vine-asset'));
 
-  function updateVines() {
-    if (!vineScene || !vineAssets.length) return;
-    const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-    const progress = Math.min(1, Math.max(0, window.scrollY / maxScroll));
-    const p = Math.min(1, Math.max(0, (progress - 0.015) / 0.985));
-    const bottomHidden = (1 - p) * 100;
-    vineAssets.forEach((asset, index) => {
-      // Slightly stagger the two creepers so the meeting feels organic rather than mechanical.
-      const local = Math.min(1, Math.max(0, p * 1.04 - index * 0.012));
-      asset.style.clipPath = `inset(0 0 ${((1 - local) * 100).toFixed(2)}% 0)`;
-    });
-    if (p > 0.965) vineScene.classList.add('vines-finished');
-    else vineScene.classList.remove('vines-finished');
+  if (vineScene && vineAssets.length) {
+    const gallery = document.querySelector('.gallery');
+    let startY = 0;
+    let endY = 1;
+    let raf = 0;
+
+    const pageY = (el) => {
+      const rect = el.getBoundingClientRect();
+      return rect.top + window.scrollY;
+    };
+
+    const layoutVines = () => {
+      if (!gallery) return;
+      startY = Math.max(0, pageY(gallery));
+      // Give the vines a quiet tail after the last gallery image so the
+      // convergence/knot happens below the photographs, not over them.
+      const tail = Math.max(420, Math.min(620, window.innerHeight * 1.05));
+      endY = startY + gallery.offsetHeight + tail;
+      vineScene.style.top = `${startY}px`;
+      vineScene.style.height = `${Math.max(1, endY - startY)}px`;
+    };
+
+    const updateVines = () => {
+      raf = 0;
+      const viewportLead = window.innerHeight * .72;
+      const p = Math.max(0, Math.min(1,
+        (window.scrollY + viewportLead - startY) / Math.max(1, endY - startY)
+      ));
+
+      // Reveal is deliberately slow and smooth. Both sides remain at the
+      // edges because the SVGs themselves do the final inward turn.
+      vineAssets.forEach((asset, index) => {
+        const local = Math.max(0, Math.min(1, p * 1.025 - index * .012));
+        asset.style.clipPath = `inset(0 0 ${((1 - local) * 100).toFixed(2)}% 0)`;
+      });
+    };
+
+    const requestVineUpdate = () => {
+      if (!raf) raf = window.requestAnimationFrame(updateVines);
+    };
+
+    const refreshVines = () => {
+      layoutVines();
+      updateVines();
+    };
+
+    refreshVines();
+    window.addEventListener('load', refreshVines, { once:true });
+    window.addEventListener('resize', refreshVines, { passive:true });
+    window.addEventListener('scroll', requestVineUpdate, { passive:true });
   }
-  updateVines();
-  window.addEventListener('resize', updateVines);
-  window.addEventListener('scroll', updateVines, { passive: true });
 
   // RSVP modal.
   const rsvpOpen = document.getElementById('rsvpOpen');
