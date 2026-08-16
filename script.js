@@ -217,18 +217,31 @@
     const layoutVines = () => {
       if (!lastPhoto || !storyEnding) return;
 
-      // Start at the bottom edge of the photo that precedes A FEW MOMENTS.
+      // Keep the existing edge vines exactly as they are from A FEW MOMENTS
+      // through the entire gallery. The lower movement begins only after the
+      // last gallery image has actually finished.
       const firstPhoto = document.querySelectorAll('.story-image.full-bleed')[1];
       startY = firstPhoto
-        ? pageY(firstPhoto) + firstPhoto.offsetHeight
+        ? pageY(firstPhoto) + firstPhoto.getBoundingClientRect().height
         : pageY(lastPhoto);
 
-      // Do not move inward until the final gallery image has completely passed.
-      convergeStartY = pageY(lastPhoto) + lastPhoto.offsetHeight;
+      // IMPORTANT: gallery images are lazy-loaded. offsetHeight can change
+      // after the first layout pass, so this value is recalculated on image
+      // load/resize below.
+      convergeStartY = pageY(lastPhoto) + lastPhoto.getBoundingClientRect().height;
 
-      // Finish the convergence near the bottom of OUR STORY, before countdown.
-      endY = pageY(storyEnding) + Math.min(storyEnding.offsetHeight * .82, window.innerHeight * 1.05);
-      if (endY <= convergeStartY) endY = convergeStartY + Math.max(360, window.innerHeight * .75);
+      // The final approach lives in the OUR STORY opening space, not inside
+      // the gallery. This gives the vines enough vertical distance to move
+      // inward slowly and meet naturally before we later add the lotus.
+      const storyTop = pageY(storyEnding);
+      const available = Math.max(0, storyEnding.getBoundingClientRect().height);
+      endY = storyTop + Math.min(available * .42, window.innerHeight * .72);
+
+      // If the layout is unusually compact, still preserve a usable approach
+      // distance rather than collapsing the animation into a few pixels.
+      if (endY <= convergeStartY + 80) {
+        endY = convergeStartY + Math.max(280, window.innerHeight * .62);
+      }
 
       vineScene.style.top = `${startY}px`;
       vineScene.style.height = `${Math.max(1, endY - startY)}px`;
@@ -267,6 +280,21 @@
       layoutVines();
       updateVines();
     };
+
+    // Re-layout after lazy gallery images arrive. This is the main fix for the
+    // missing lower section: the previous measurements were sometimes taken
+    // before the final photo had a real height.
+    const watchedImages = Array.from(document.querySelectorAll('.gallery img, .story-image img'));
+    watchedImages.forEach(img => {
+      if (!img.complete) img.addEventListener('load', refreshVines, { once:true });
+    });
+
+    let vineResizeObserver = null;
+    if ('ResizeObserver' in window) {
+      vineResizeObserver = new ResizeObserver(() => refreshVines());
+      [lastPhoto, storyEnding, document.querySelector('.gallery')].filter(Boolean)
+        .forEach(el => vineResizeObserver.observe(el));
+    }
 
     refreshVines();
     window.addEventListener('load', refreshVines, { once:true });
