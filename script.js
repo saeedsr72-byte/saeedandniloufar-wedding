@@ -194,61 +194,61 @@
     document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
   }
 
-  // Botanical vines — keep the proven edge-vine animation all the way to the
-  // bottom of the page. No convergence, no merge, no flower in this step.
+  // Botanical vines — stable edge-only version.
+  // IMPORTANT: .story-vines is absolutely positioned INSIDE #site, so all
+  // coordinates below are relative to #site, not the document.
   const vineScene = document.querySelector('.story-vines');
   const vineAssets = Array.from(document.querySelectorAll('.vine-asset'));
 
   if (vineScene && vineAssets.length) {
-    const lastPhoto = document.querySelector('.gallery .photo-blend:last-child');
-    let startY = 0;
-    let endY = 1;
+    const site = document.getElementById('site');
+    const firstPhoto = document.querySelectorAll('.story-image.full-bleed')[1];
+    let startRel = 0;
+    let endRel = 1;
     let raf = 0;
 
-    const pageY = (el) => {
-      const rect = el.getBoundingClientRect();
-      return rect.top + window.scrollY;
+    const docY = (el) => {
+      const r = el.getBoundingClientRect();
+      return r.top + window.scrollY;
     };
 
     const layoutVines = () => {
-      if (!lastPhoto) return;
+      if (!site || !firstPhoto) return;
 
-      // Do not touch anything before the last photo. The vines begin exactly
-      // where the existing gallery vine sequence already begins.
-      const firstPhoto = document.querySelectorAll('.story-image.full-bleed')[1];
-      startY = firstPhoto
-        ? pageY(firstPhoto) + firstPhoto.offsetHeight
-        : pageY(lastPhoto);
-
-      // Continue the same edge vines to the real bottom of the document.
-      // A small safety margin keeps the artwork present through the closing.
-      endY = Math.max(
+      const siteTop = docY(site);
+      const photoBottom = docY(firstPhoto) + firstPhoto.getBoundingClientRect().height;
+      const documentBottom = Math.max(
         document.documentElement.scrollHeight,
-        document.body.scrollHeight,
-        pageY(lastPhoto) + lastPhoto.offsetHeight + window.innerHeight * 2
+        document.body.scrollHeight
       );
 
-      if (endY <= startY) endY = startY + Math.max(600, window.innerHeight * 2);
+      // The vine artwork begins at the exact same point as the existing
+      // edge-vine sequence. Nothing above this point is touched.
+      startRel = Math.max(0, photoBottom - siteTop);
 
-      vineScene.style.top = `${startY}px`;
-      vineScene.style.height = `${endY - startY}px`;
+      // Continue all the way to the actual bottom of the document.
+      endRel = Math.max(startRel + 800, documentBottom - siteTop);
+
+      vineScene.style.top = `${startRel}px`;
+      vineScene.style.height = `${endRel - startRel}px`;
     };
 
     const updateVines = () => {
       raf = 0;
-      const lead = window.innerHeight * .68;
+      const lead = window.innerHeight * 0.62;
       const progress = Math.max(0, Math.min(1,
-        (window.scrollY + lead - startY) / Math.max(1, endY - startY)
+        (window.scrollY + lead - (startRel + (document.querySelector('#site')?.getBoundingClientRect().top || 0) + window.scrollY)) /
+        Math.max(1, endRel - startRel)
       ));
 
-      // Only reveal the existing SVG artwork. The vines remain on their
-      // original left/right edges for the entire remaining page.
+      // Keep the proven thin edge vines. No convergence, no rotation,
+      // no merge and no flower. They simply reveal downward with scrolling.
       vineAssets.forEach((asset, index) => {
-        const local = Math.max(0, Math.min(1, progress * 1.025 - index * .012));
+        const local = Math.max(0, Math.min(1, progress * 1.035 - index * 0.012));
         asset.style.clipPath = `inset(0 0 ${((1 - local) * 100).toFixed(2)}% 0)`;
+        asset.style.transform = 'none';
         asset.classList.remove('is-converging');
         asset.style.removeProperty('--vine-shift');
-        asset.style.transform = 'none';
       });
     };
 
@@ -261,19 +261,22 @@
       updateVines();
     };
 
-    refreshVines();
-    window.addEventListener('load', refreshVines, { once:true });
-    window.addEventListener('resize', refreshVines, { passive:true });
-    window.addEventListener('scroll', requestVineUpdate, { passive:true });
-
-    // Lazy-loaded images can change document height after initial layout.
-    document.querySelectorAll('img').forEach((img) => {
-      if (!img.complete) img.addEventListener('load', refreshVines, { once:true });
+    const watchedImages = Array.from(document.querySelectorAll('.gallery img, .story-image img'));
+    watchedImages.forEach(img => {
+      if (!img.complete) img.addEventListener('load', refreshVines, { once: true });
     });
+
+    let ro = null;
     if ('ResizeObserver' in window) {
-      const ro = new ResizeObserver(refreshVines);
-      ro.observe(document.querySelector('main#site') || document.body);
+      ro = new ResizeObserver(refreshVines);
+      [site, document.querySelector('.gallery'), document.querySelector('.story-ending')]
+        .filter(Boolean).forEach(el => ro.observe(el));
     }
+
+    refreshVines();
+    window.addEventListener('load', refreshVines, { once: true });
+    window.addEventListener('resize', refreshVines, { passive: true });
+    window.addEventListener('scroll', requestVineUpdate, { passive: true });
   }
 
   // RSVP modal.
