@@ -168,14 +168,14 @@
     document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
   }
 
-  // Botanical vines: start at the FIRST full-bleed story image and run
-  // parallel down to the actual bottom of the page. No convergence/flower.
+  // Botanical vines: start at the TOP of the first story image and run
+  // parallel down both page edges to the true bottom of the document.
+  // The reveal is driven by scroll and explicitly writes both standard and
+  // WebKit clip-path properties for Safari/iPadOS compatibility.
   const vineScene = document.querySelector('.story-vines');
   const vineAssets = Array.from(document.querySelectorAll('.vine-asset'));
 
   if (vineScene && vineAssets.length) {
-    const site = document.getElementById('site');
-    const firstPhoto = document.querySelectorAll('.story-image.full-bleed')[0];
     let startRel = 0;
     let endRel = 1;
     let raf = 0;
@@ -186,49 +186,70 @@
     };
 
     const layoutVines = () => {
+      const firstPhoto = document.querySelector('.story-image.full-bleed');
       if (!site || !firstPhoto) return;
+
       const siteTop = docY(site);
-      const photoBottom = docY(firstPhoto) + firstPhoto.getBoundingClientRect().height;
-      const documentBottom = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
-      startRel = Math.max(0, photoBottom - siteTop);
-      endRel = Math.max(startRel + 800, documentBottom - siteTop);
+      const photoTop = docY(firstPhoto);
+      const documentBottom = Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight
+      );
+
+      // Start at the first pixel of the first story image — not after it.
+      startRel = Math.max(0, photoTop - siteTop);
+      endRel = Math.max(startRel + 1200, documentBottom - siteTop);
+
       vineScene.style.top = `${startRel}px`;
       vineScene.style.height = `${endRel - startRel}px`;
+      vineScene.style.bottom = 'auto';
+
+      // Safari can keep a stale percentage clip on an image after a resize;
+      // clear it once before the next scroll frame recalculates it.
+      vineAssets.forEach((asset) => {
+        const img = asset.querySelector('img');
+        if (img) {
+          img.style.clipPath = 'inset(0 0 100% 0)';
+          img.style.webkitClipPath = 'inset(0 0 100% 0)';
+        }
+      });
     };
 
     const updateVines = () => {
       raf = 0;
-      const lead = window.innerHeight * 0.62;
+      const viewportLead = window.innerHeight * 0.72;
       const siteTop = docY(site);
-      const scrollRel = window.scrollY + lead - siteTop;
+      const scrollRel = window.scrollY + viewportLead - siteTop;
       const progress = Math.max(0, Math.min(1,
         (scrollRel - startRel) / Math.max(1, endRel - startRel)
       ));
-      vineAssets.forEach((asset, index) => {
-        const local = Math.max(0, Math.min(1, progress * 1.035 - index * 0.012));
-        asset.style.clipPath = `inset(0 0 ${((1 - local) * 100).toFixed(2)}% 0)`;
-        asset.style.transform = 'none';
-        asset.classList.remove('is-converging');
-        asset.style.removeProperty('--vine-shift');
+      const percent = ((1 - progress) * 100).toFixed(2);
+
+      vineAssets.forEach((asset) => {
+        const img = asset.querySelector('img');
+        if (!img) return;
+        const clip = `inset(0 0 ${percent}% 0)`;
+        img.style.clipPath = clip;
+        img.style.webkitClipPath = clip;
       });
     };
 
     const requestVineUpdate = () => {
       if (!raf) raf = window.requestAnimationFrame(updateVines);
     };
+
     const refreshVines = () => {
       layoutVines();
       updateVines();
     };
 
-    const watchedImages = Array.from(document.querySelectorAll('.gallery img, .story-image img'));
+    const watchedImages = Array.from(document.querySelectorAll('.gallery img, .story-image img, .venue-photo'));
     watchedImages.forEach(img => {
       if (!img.complete) img.addEventListener('load', refreshVines, { once: true });
     });
 
-    let ro = null;
     if ('ResizeObserver' in window) {
-      ro = new ResizeObserver(refreshVines);
+      const ro = new ResizeObserver(refreshVines);
       [site, document.querySelector('.gallery'), document.querySelector('.story-ending')]
         .filter(Boolean).forEach(el => ro.observe(el));
     }
@@ -236,6 +257,7 @@
     refreshVines();
     window.addEventListener('load', refreshVines, { once: true });
     window.addEventListener('resize', refreshVines, { passive: true });
+    window.addEventListener('orientationchange', refreshVines, { passive: true });
     window.addEventListener('scroll', requestVineUpdate, { passive: true });
   }
 
