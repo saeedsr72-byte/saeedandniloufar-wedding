@@ -28,16 +28,11 @@
     lang = next === 'en' ? 'en' : 'fa';
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
-
     document.querySelectorAll('[data-fa][data-en]').forEach((el) => {
       el.innerHTML = lang === 'fa' ? el.dataset.fa : el.dataset.en;
     });
-
     langButton.textContent = lang === 'fa' ? 'English' : 'فارسی';
-    document.title = lang === 'fa'
-      ? 'سعید و نیلوفر | ۱۰ شهریور ۱۴۰۵'
-      : 'Saeed & Niloufar | 31 August 2026';
-
+    document.title = lang === 'fa' ? 'سعید و نیلوفر | ۱۰ شهریور ۱۴۰۵' : 'Saeed & Niloufar | 31 August 2026';
     const formLanguage = document.getElementById('formLanguage');
     if (formLanguage) formLanguage.value = lang === 'fa' ? 'Persian' : 'English';
   }
@@ -72,15 +67,10 @@
   function openInvitation() {
     if (opened) return;
     opened = true;
-
-    // This click is the user gesture that authorizes audio on mobile browsers.
     playLanguageTrack();
-
     document.body.classList.add('gate-open');
     site.classList.remove('locked');
     gate.classList.add('split');
-
-    // Keep the proven split timing; only after the animation finishes do we hide the gate.
     window.setTimeout(() => {
       gate.classList.add('opened');
       gate.setAttribute('aria-hidden', 'true');
@@ -90,7 +80,6 @@
     }, 2700);
   }
 
-  // Language change deliberately reloads the invitation so the gate appears again.
   langButton.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -100,32 +89,26 @@
   });
 
   openButton.addEventListener('click', openInvitation, { passive: true });
-  // Use the exact supplied fingerprint artwork and split the image itself.
-  // This avoids SVG foreignObject rendering differences on mobile browsers.
   const fingerprintButton = document.getElementById('openInvitation');
   const fingerprintGate = document.getElementById('gate');
   if (fingerprintButton && fingerprintGate && !fingerprintButton.querySelector('.gate-fingerprint-safe')) {
     const stage = document.createElement('div');
     stage.className = 'gate-fingerprint-safe';
     stage.setAttribute('aria-hidden', 'true');
-
     const left = document.createElement('div');
     const right = document.createElement('div');
     left.className = 'gate-fp-half gate-fp-left';
     right.className = 'gate-fp-half gate-fp-right';
-
     const leftImg = document.createElement('img');
     const rightImg = document.createElement('img');
     leftImg.src = 'fingerprint-seal.png';
     rightImg.src = 'fingerprint-seal.png';
     leftImg.alt = '';
     rightImg.alt = '';
-
     left.appendChild(leftImg);
     right.appendChild(rightImg);
     stage.append(left, right);
     fingerprintButton.appendChild(stage);
-
     const syncFingerprint = () => {
       stage.classList.toggle('split', fingerprintGate.classList.contains('split'));
     };
@@ -134,15 +117,10 @@
     syncFingerprint();
   }
 
-  // Fallback for touch/click implementations that behave differently on older mobile browsers.
   openButton.onclick = openInvitation;
-
-  // Initial state: gate is always present on a fresh load.
   setLanguage(lang);
   lockGate();
 
-  // Countdown is anchored to 10 Shahrivar 1405, 19:00 Tehran.
-  // The Persian date is the source of truth; the English date is display-only.
   function resolvePersianEventDate() {
     const formatter = new Intl.DateTimeFormat('en-US-u-ca-persian', {
       timeZone: 'Asia/Tehran', year: 'numeric', month: 'numeric', day: 'numeric'
@@ -158,20 +136,17 @@
         return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
       }
     }
-    // Known conversion fallback for environments without the Persian calendar implementation.
     return '2026-08-31';
   }
 
   const eventDate = resolvePersianEventDate();
   const countdownTarget = new Date(`${eventDate}T19:00:00+03:30`).getTime();
-
   function updateCountdown() {
     let diff = Math.max(0, countdownTarget - Date.now());
     const days = Math.floor(diff / 86400000); diff %= 86400000;
     const hours = Math.floor(diff / 3600000); diff %= 3600000;
     const minutes = Math.floor(diff / 60000); const seconds = Math.floor((diff % 60000) / 1000);
-    const values = { days, hours, minutes, seconds };
-    Object.entries(values).forEach(([id, value]) => {
+    Object.entries({ days, hours, minutes, seconds }).forEach(([id, value]) => {
       const el = document.getElementById(id);
       if (el) el.textContent = String(value).padStart(2, '0');
     });
@@ -179,7 +154,6 @@
   updateCountdown();
   window.setInterval(updateCountdown, 1000);
 
-  // Scroll reveal.
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -194,15 +168,14 @@
     document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
   }
 
-  // Botanical vines — stable edge-only version.
-  // IMPORTANT: .story-vines is absolutely positioned INSIDE #site, so all
-  // coordinates below are relative to #site, not the document.
+  // Botanical vines: start at the FIRST full-bleed story image and run
+  // parallel down to the actual bottom of the page. No convergence/flower.
   const vineScene = document.querySelector('.story-vines');
   const vineAssets = Array.from(document.querySelectorAll('.vine-asset'));
 
   if (vineScene && vineAssets.length) {
     const site = document.getElementById('site');
-    const firstPhoto = document.querySelectorAll('.story-image.full-bleed')[1];
+    const firstPhoto = document.querySelectorAll('.story-image.full-bleed')[0];
     let startRel = 0;
     let endRel = 1;
     let raf = 0;
@@ -214,21 +187,11 @@
 
     const layoutVines = () => {
       if (!site || !firstPhoto) return;
-
       const siteTop = docY(site);
       const photoBottom = docY(firstPhoto) + firstPhoto.getBoundingClientRect().height;
-      const documentBottom = Math.max(
-        document.documentElement.scrollHeight,
-        document.body.scrollHeight
-      );
-
-      // The vine artwork begins at the exact same point as the existing
-      // edge-vine sequence. Nothing above this point is touched.
+      const documentBottom = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
       startRel = Math.max(0, photoBottom - siteTop);
-
-      // Continue all the way to the actual bottom of the document.
       endRel = Math.max(startRel + 800, documentBottom - siteTop);
-
       vineScene.style.top = `${startRel}px`;
       vineScene.style.height = `${endRel - startRel}px`;
     };
@@ -236,15 +199,11 @@
     const updateVines = () => {
       raf = 0;
       const lead = window.innerHeight * 0.62;
-      // Convert document scroll position into #site-relative coordinates.
       const siteTop = docY(site);
       const scrollRel = window.scrollY + lead - siteTop;
       const progress = Math.max(0, Math.min(1,
         (scrollRel - startRel) / Math.max(1, endRel - startRel)
       ));
-
-      // Keep the proven thin edge vines. No convergence, no rotation,
-      // no merge and no flower. They simply reveal downward with scrolling.
       vineAssets.forEach((asset, index) => {
         const local = Math.max(0, Math.min(1, progress * 1.035 - index * 0.012));
         asset.style.clipPath = `inset(0 0 ${((1 - local) * 100).toFixed(2)}% 0)`;
@@ -257,7 +216,6 @@
     const requestVineUpdate = () => {
       if (!raf) raf = window.requestAnimationFrame(updateVines);
     };
-
     const refreshVines = () => {
       layoutVines();
       updateVines();
@@ -281,7 +239,6 @@
     window.addEventListener('scroll', requestVineUpdate, { passive: true });
   }
 
-  // RSVP modal.
   const rsvpOpen = document.getElementById('rsvpOpen');
   const rsvpStatus = document.getElementById('rsvpStatus');
   const visitTime = document.getElementById('visitTime');
@@ -291,7 +248,6 @@
   function tehranTime() {
     return new Date().toLocaleString('en-GB', { timeZone: 'Asia/Tehran', hour12: false }) + ' (Tehran)';
   }
-
   function openRsvp() {
     if (!rsvpModal) return;
     rsvpModal.classList.add('open');
@@ -318,7 +274,6 @@
     if (visitTime) visitTime.value = tehranTime();
     if (siteTotalViews) siteTotalViews.value = viewCount;
     if (formLanguage) formLanguage.value = lang === 'fa' ? 'Persian' : 'English';
-
     try {
       const response = await fetch('https://formsubmit.co/ajax/Saeed.sr72@gmail.com', {
         method: 'POST',
@@ -327,21 +282,16 @@
       });
       const data = await response.json();
       if (!response.ok || data.success === false) throw new Error('Submission failed');
-      if (rsvpStatus) rsvpStatus.textContent = lang === 'fa'
-        ? 'پاسخ شما با موفقیت برای ما ارسال شد ❤️'
-        : 'Your RSVP has been sent successfully ❤️';
+      if (rsvpStatus) rsvpStatus.textContent = lang === 'fa' ? 'پاسخ شما با موفقیت برای ما ارسال شد ❤️' : 'Your RSVP has been sent successfully ❤️';
       rsvpForm.reset();
       if (formLanguage) formLanguage.value = lang === 'fa' ? 'Persian' : 'English';
     } catch (_) {
-      if (rsvpStatus) rsvpStatus.textContent = lang === 'fa'
-        ? 'ارسال انجام نشد؛ لطفاً دوباره تلاش کنید.'
-        : 'Something went wrong. Please try again.';
+      if (rsvpStatus) rsvpStatus.textContent = lang === 'fa' ? 'ارسال انجام نشد؛ لطفاً دوباره تلاش کنید.' : 'Something went wrong. Please try again.';
     } finally {
       if (submit) submit.disabled = false;
     }
   });
 
-  // Global site view counter. RSVP receives the current total when opened/submitted.
   async function trackVisit() {
     const endpoint = 'https://api.counterapi.dev/v1/saeed-niloufar-wedding/site-views/up';
     try {
