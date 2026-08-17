@@ -236,9 +236,11 @@
     const updateVines = () => {
       raf = 0;
       const lead = window.innerHeight * 0.62;
+      // Convert document scroll position into #site-relative coordinates.
+      const siteTop = docY(site);
+      const scrollRel = window.scrollY + lead - siteTop;
       const progress = Math.max(0, Math.min(1,
-        (window.scrollY + lead - (startRel + (document.querySelector('#site')?.getBoundingClientRect().top || 0) + window.scrollY)) /
-        Math.max(1, endRel - startRel)
+        (scrollRel - startRel) / Math.max(1, endRel - startRel)
       ));
 
       // Keep the proven thin edge vines. No convergence, no rotation,
