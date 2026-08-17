@@ -1,7 +1,6 @@
 /* S&N Wedding Invitation — stable interaction build */
 (() => {
   'use strict';
-
   const gate = document.getElementById('gate');
   const openButton = document.getElementById('openInvitation');
   const site = document.getElementById('site');
@@ -10,9 +9,7 @@
   const enAudio = document.getElementById('enAudio');
   const rsvpModal = document.getElementById('rsvpModal');
   const rsvpForm = document.getElementById('rsvpForm');
-
   if (!gate || !openButton || !site || !langButton || !faAudio || !enAudio) return;
-
   const tracks = { fa: faAudio, en: enAudio };
   const storedLang = (() => { try { return sessionStorage.getItem('snWeddingLang'); } catch (_) { return null; } })();
   let lang = storedLang === 'en' ? 'en' : 'fa';
@@ -29,26 +26,10 @@
     const formLanguage = document.getElementById('formLanguage');
     if (formLanguage) formLanguage.value = lang === 'fa' ? 'Persian' : 'English';
   }
-
   function stopAudio() { Object.values(tracks).forEach(audio => { audio.pause(); try { audio.currentTime = 0; } catch (_) {} }); }
-  function playLanguageTrack() {
-    const audio = tracks[lang];
-    const other = lang === 'fa' ? tracks.en : tracks.fa;
-    other.pause(); try { other.currentTime = 0; } catch (_) {}
-    audio.currentTime = 0;
-    const promise = audio.play();
-    if (promise && typeof promise.catch === 'function') promise.catch(() => {});
-  }
-  function lockGate() {
-    opened = false; stopAudio(); document.body.classList.add('gate-open'); site.classList.add('locked');
-    gate.classList.remove('split', 'opened'); gate.setAttribute('aria-hidden', 'false'); window.scrollTo(0, 0);
-  }
-  function openInvitation() {
-    if (opened) return;
-    opened = true; playLanguageTrack(); document.body.classList.add('gate-open'); site.classList.remove('locked'); gate.classList.add('split');
-    window.setTimeout(() => { gate.classList.add('opened'); gate.setAttribute('aria-hidden', 'true'); document.body.classList.remove('gate-open'); window.scrollTo(0, 0); document.querySelector('.hero')?.classList.add('visible'); }, 2700);
-  }
-
+  function playLanguageTrack() { const audio = tracks[lang]; const other = lang === 'fa' ? tracks.en : tracks.fa; other.pause(); try { other.currentTime = 0; } catch (_) {} audio.currentTime = 0; const promise = audio.play(); if (promise && typeof promise.catch === 'function') promise.catch(() => {}); }
+  function lockGate() { opened = false; stopAudio(); document.body.classList.add('gate-open'); site.classList.add('locked'); gate.classList.remove('split', 'opened'); gate.setAttribute('aria-hidden', 'false'); window.scrollTo(0, 0); }
+  function openInvitation() { if (opened) return; opened = true; playLanguageTrack(); document.body.classList.add('gate-open'); site.classList.remove('locked'); gate.classList.add('split'); window.setTimeout(() => { gate.classList.add('opened'); gate.setAttribute('aria-hidden', 'true'); document.body.classList.remove('gate-open'); window.scrollTo(0, 0); document.querySelector('.hero')?.classList.add('visible'); }, 2700); }
   langButton.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); const next = lang === 'fa' ? 'en' : 'fa'; try { sessionStorage.setItem('snWeddingLang', next); } catch (_) {} window.location.reload(); });
   openButton.addEventListener('click', openInvitation, { passive: true });
 
@@ -57,9 +38,7 @@
   if (fingerprintButton && fingerprintGate && !fingerprintButton.querySelector('.gate-fingerprint-safe')) {
     const stage = document.createElement('div'); stage.className = 'gate-fingerprint-safe'; stage.setAttribute('aria-hidden', 'true');
     const left = document.createElement('div'); const right = document.createElement('div'); left.className = 'gate-fp-half gate-fp-left'; right.className = 'gate-fp-half gate-fp-right';
-    const leftImg = document.createElement('img'); const rightImg = document.createElement('img');
-    leftImg.src = 'fingerprint-seal.png'; rightImg.src = 'fingerprint-seal.png'; leftImg.alt = ''; rightImg.alt = '';
-    left.appendChild(leftImg); right.appendChild(rightImg); stage.append(left, right); fingerprintButton.appendChild(stage);
+    const leftImg = document.createElement('img'); const rightImg = document.createElement('img'); leftImg.src = 'fingerprint-seal.png'; rightImg.src = 'fingerprint-seal.png'; leftImg.alt = ''; rightImg.alt = ''; left.appendChild(leftImg); right.appendChild(rightImg); stage.append(left, right); fingerprintButton.appendChild(stage);
     const syncFingerprint = () => stage.classList.toggle('split', fingerprintGate.classList.contains('split'));
     new MutationObserver(syncFingerprint).observe(fingerprintGate, { attributes:true, attributeFilter:['class'] }); syncFingerprint();
   }
@@ -69,101 +48,68 @@
   function resolvePersianEventDate() {
     const formatter = new Intl.DateTimeFormat('en-US-u-ca-persian', { timeZone: 'Asia/Tehran', year: 'numeric', month: 'numeric', day: 'numeric' });
     const start = Date.UTC(2026, 0, 1, 12, 0, 0);
-    for (let i = 0; i < 400; i++) {
-      const d = new Date(start + i * 86400000); const parts = formatter.formatToParts(d);
-      const y = Number(parts.find(p => p.type === 'year')?.value); const m = Number(parts.find(p => p.type === 'month')?.value); const day = Number(parts.find(p => p.type === 'day')?.value);
-      if (y === 1405 && m === 6 && day === 10) return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
-    }
+    for (let i = 0; i < 400; i++) { const d = new Date(start + i * 86400000); const parts = formatter.formatToParts(d); const y = Number(parts.find(p => p.type === 'year')?.value); const m = Number(parts.find(p => p.type === 'month')?.value); const day = Number(parts.find(p => p.type === 'day')?.value); if (y === 1405 && m === 6 && day === 10) return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`; }
     return '2026-08-31';
   }
-
   const eventDate = resolvePersianEventDate();
   const countdownTarget = new Date(`${eventDate}T19:00:00+03:30`).getTime();
-  function updateCountdown() {
-    let diff = Math.max(0, countdownTarget - Date.now()); const days = Math.floor(diff / 86400000); diff %= 86400000; const hours = Math.floor(diff / 3600000); diff %= 3600000; const minutes = Math.floor(diff / 60000); const seconds = Math.floor((diff % 60000) / 1000);
-    Object.entries({ days, hours, minutes, seconds }).forEach(([id, value]) => { const el = document.getElementById(id); if (el) el.textContent = String(value).padStart(2, '0'); });
-  }
+  function updateCountdown() { let diff = Math.max(0, countdownTarget - Date.now()); const days = Math.floor(diff / 86400000); diff %= 86400000; const hours = Math.floor(diff / 3600000); diff %= 3600000; const minutes = Math.floor(diff / 60000); const seconds = Math.floor((diff % 60000) / 1000); Object.entries({ days, hours, minutes, seconds }).forEach(([id, value]) => { const el = document.getElementById(id); if (el) el.textContent = String(value).padStart(2, '0'); }); }
   updateCountdown(); window.setInterval(updateCountdown, 1000);
+  if ('IntersectionObserver' in window) { const observer = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } }), { threshold: 0.12, rootMargin: '0px 0px -7% 0px' }); document.querySelectorAll('.reveal').forEach(el => observer.observe(el)); } else document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
 
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } }), { threshold: 0.12, rootMargin: '0px 0px -7% 0px' });
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-  } else document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
-
-  // VINES — hard reset of the previous implementation.
-  // Start at the TOP of the HERO (the first photo on the page), keep both vines
-  // parallel on the left/right edges, and reveal them continuously to the bottom.
-  // The wrapper itself is revealed by height, avoiding clip-path quirks on Safari.
+  // VINES — final implementation: begin at the hero (first photo), run parallel at both edges,
+  // and reveal to the true bottom. Height is written with !important because legacy CSS has
+  // height:100%!important on .vine-asset. This deliberately bypasses the old clip-path system.
   const vineScene = document.querySelector('.story-vines');
   const vineAssets = Array.from(document.querySelectorAll('.vine-asset'));
   if (vineScene && vineAssets.length) {
-    let startRel = 0;
-    let endRel = 1;
-    let raf = 0;
-
+    let startRel = 0, endRel = 1, raf = 0;
     const docY = el => { const r = el.getBoundingClientRect(); return r.top + window.scrollY; };
-
     const layoutVines = () => {
       const hero = document.querySelector('.hero');
       if (!hero) return;
       const siteTop = docY(site);
       const heroTop = docY(hero);
       const documentBottom = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
-
-      // The hero is the first photo/visual section, so the vine begins at its top edge.
       startRel = Math.max(0, heroTop - siteTop);
       endRel = Math.max(startRel + 1200, documentBottom - siteTop);
-
       vineScene.style.top = `${startRel}px`;
       vineScene.style.height = `${endRel - startRel}px`;
       vineScene.style.bottom = 'auto';
       vineScene.style.overflow = 'visible';
-
       vineAssets.forEach(asset => {
-        asset.style.top = '0';
-        asset.style.bottom = 'auto';
-        asset.style.height = '0px';
-        asset.style.clipPath = 'none';
-        asset.style.webkitClipPath = 'none';
-        asset.style.overflow = 'hidden';
-
+        asset.style.setProperty('top', '0px', 'important');
+        asset.style.setProperty('height', '0px', 'important');
+        asset.style.setProperty('bottom', 'auto', 'important');
+        asset.style.setProperty('clip-path', 'none', 'important');
+        asset.style.setProperty('-webkit-clip-path', 'none', 'important');
+        asset.style.setProperty('overflow', 'hidden', 'important');
         const img = asset.querySelector('img');
         if (img) {
-          img.style.position = 'absolute';
-          img.style.top = '0';
-          img.style.bottom = 'auto';
-          img.style.left = '0';
-          img.style.right = 'auto';
-          img.style.width = '100%';
-          img.style.height = `${endRel - startRel}px`;
-          img.style.objectFit = 'fill';
-          img.style.clipPath = 'none';
-          img.style.webkitClipPath = 'none';
+          img.style.setProperty('position', 'absolute', 'important');
+          img.style.setProperty('top', '0px', 'important');
+          img.style.setProperty('left', '0px', 'important');
+          img.style.setProperty('right', 'auto', 'important');
+          img.style.setProperty('bottom', 'auto', 'important');
+          img.style.setProperty('width', '100%', 'important');
+          img.style.setProperty('height', `${endRel - startRel}px`, 'important');
+          img.style.setProperty('object-fit', 'fill', 'important');
+          img.style.setProperty('clip-path', 'none', 'important');
+          img.style.setProperty('-webkit-clip-path', 'none', 'important');
         }
       });
     };
-
     const updateVines = () => {
       raf = 0;
       const scrollRel = window.scrollY + window.innerHeight * 0.72 - docY(site);
       const progress = Math.max(0, Math.min(1, (scrollRel - startRel) / Math.max(1, endRel - startRel)));
       const revealHeight = Math.max(0, (endRel - startRel) * progress);
-
-      vineAssets.forEach(asset => {
-        asset.style.height = `${revealHeight}px`;
-      });
+      vineAssets.forEach(asset => asset.style.setProperty('height', `${revealHeight}px`, 'important'));
     };
-
     const requestVineUpdate = () => { if (!raf) raf = window.requestAnimationFrame(updateVines); };
     const refreshVines = () => { layoutVines(); updateVines(); };
-
-    document.querySelectorAll('.gallery img, .story-image img, .venue-photo').forEach(img => {
-      if (!img.complete) img.addEventListener('load', refreshVines, { once: true });
-    });
-    if ('ResizeObserver' in window) {
-      const ro = new ResizeObserver(refreshVines);
-      [site, document.querySelector('.gallery'), document.querySelector('.story-ending')].filter(Boolean).forEach(el => ro.observe(el));
-    }
+    document.querySelectorAll('.gallery img, .story-image img, .venue-photo').forEach(img => { if (!img.complete) img.addEventListener('load', refreshVines, { once: true }); });
+    if ('ResizeObserver' in window) { const ro = new ResizeObserver(refreshVines); [site, document.querySelector('.gallery'), document.querySelector('.story-ending')].filter(Boolean).forEach(el => ro.observe(el)); }
     refreshVines();
     window.addEventListener('load', refreshVines, { once: true });
     window.addEventListener('resize', refreshVines, { passive: true });
@@ -176,19 +122,10 @@
   function openRsvp() { if (!rsvpModal) return; rsvpModal.classList.add('open'); rsvpModal.setAttribute('aria-hidden', 'false'); if (rsvpStatus) rsvpStatus.textContent = ''; if (visitTime) visitTime.value = tehranTime(); if (siteTotalViews) siteTotalViews.value = viewCount; document.querySelector("#rsvpForm input[name='name']")?.focus(); }
   function closeRsvp() { if (!rsvpModal) return; rsvpModal.classList.remove('open'); rsvpModal.setAttribute('aria-hidden', 'true'); }
   rsvpOpen?.addEventListener('click', openRsvp); document.querySelectorAll('[data-close-modal]').forEach(el => el.addEventListener('click', closeRsvp)); document.addEventListener('keydown', e => { if (e.key === 'Escape') closeRsvp(); });
-
   rsvpForm?.addEventListener('submit', async event => {
     event.preventDefault(); const submit = document.getElementById('submitRsvp'); if (submit) submit.disabled = true; if (rsvpStatus) rsvpStatus.textContent = lang === 'fa' ? 'در حال ارسال...' : 'Sending...'; if (visitTime) visitTime.value = tehranTime(); if (siteTotalViews) siteTotalViews.value = viewCount; if (formLanguage) formLanguage.value = lang === 'fa' ? 'Persian' : 'English';
-    try {
-      const response = await fetch('https://formsubmit.co/ajax/Saeed.sr72@gmail.com', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(Object.fromEntries(new FormData(rsvpForm).entries())) });
-      const data = await response.json(); if (!response.ok || data.success === false) throw new Error('Submission failed'); if (rsvpStatus) rsvpStatus.textContent = lang === 'fa' ? 'پاسخ شما با موفقیت برای ما ارسال شد ❤️' : 'Your RSVP has been sent successfully ❤️'; rsvpForm.reset(); if (formLanguage) formLanguage.value = lang === 'fa' ? 'Persian' : 'English';
-    } catch (_) { if (rsvpStatus) rsvpStatus.textContent = lang === 'fa' ? 'ارسال انجام نشد؛ لطفاً دوباره تلاش کنید.' : 'Something went wrong. Please try again.'; }
-    finally { if (submit) submit.disabled = false; }
+    try { const response = await fetch('https://formsubmit.co/ajax/Saeed.sr72@gmail.com', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(Object.fromEntries(new FormData(rsvpForm).entries())) }); const data = await response.json(); if (!response.ok || data.success === false) throw new Error('Submission failed'); if (rsvpStatus) rsvpStatus.textContent = lang === 'fa' ? 'پاسخ شما با موفقیت برای ما ارسال شد ❤️' : 'Your RSVP has been sent successfully ❤️'; rsvpForm.reset(); if (formLanguage) formLanguage.value = lang === 'fa' ? 'Persian' : 'English'; } catch (_) { if (rsvpStatus) rsvpStatus.textContent = lang === 'fa' ? 'ارسال انجام نشد؛ لطفاً دوباره تلاش کنید.' : 'Something went wrong. Please try again.'; } finally { if (submit) submit.disabled = false; }
   });
-
-  async function trackVisit() {
-    const endpoint = 'https://api.counterapi.dev/v1/saeed-niloufar-wedding/site-views/up';
-    try { const response = await fetch(endpoint, { method: 'GET', cache: 'no-store' }); if (!response.ok) throw new Error(`Counter HTTP ${response.status}`); const result = await response.json(); const value = result?.value ?? result?.count ?? result?.data?.value ?? result?.data?.count; if (value !== undefined && value !== null) { viewCount = String(value); if (siteTotalViews) siteTotalViews.value = viewCount; } } catch (error) { console.warn('S&N view counter unavailable:', error); }
-  }
+  async function trackVisit() { const endpoint = 'https://api.counterapi.dev/v1/saeed-niloufar-wedding/site-views/up'; try { const response = await fetch(endpoint, { method: 'GET', cache: 'no-store' }); if (!response.ok) throw new Error(`Counter HTTP ${response.status}`); const result = await response.json(); const value = result?.value ?? result?.count ?? result?.data?.value ?? result?.data?.count; if (value !== undefined && value !== null) { viewCount = String(value); if (siteTotalViews) siteTotalViews.value = viewCount; } } catch (error) { console.warn('S&N view counter unavailable:', error); } }
   trackVisit();
 })();
