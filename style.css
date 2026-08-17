@@ -222,3 +222,12 @@ button,input,select,textarea{font:inherit}
 @media(prefers-reduced-motion:reduce){
   .gate-fp-half{transition:none !important}
 }
+
+
+/* V8.3 — simple edge vines to the bottom: no convergence/merge animation. */
+.vine-left.is-converging,
+.vine-right.is-converging {
+  transform: none !important;
+}
+.vine-merge-glow,
+.vine-lotus { display:none !important; }
