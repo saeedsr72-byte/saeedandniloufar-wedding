@@ -36,15 +36,12 @@
         <circle cx="180" cy="180" r="146" fill="url(#goldGlow)" opacity=".5" filter="url(#sealGlow)"/>
         <circle cx="180" cy="180" r="139" fill="none" stroke="#d9b66d" stroke-width="1.2" opacity=".58"/>
         <circle cx="180" cy="180" r="132" fill="none" stroke="#e8d4a4" stroke-width=".8" stroke-dasharray="2 7" opacity=".48"/>
-
-        <!-- Fingerprint artwork is rendered as two HTML image halves for reliable mobile split animation. -->
         <foreignObject x="34" y="34" width="292" height="292" class="fingerprint-fo fingerprint-left-fo">
           <div xmlns="http://www.w3.org/1999/xhtml" class="fingerprint-piece fingerprint-left-piece"><img src="fingerprint-seal.png" alt="" /></div>
         </foreignObject>
         <foreignObject x="34" y="34" width="292" height="292" class="fingerprint-fo fingerprint-right-fo">
           <div xmlns="http://www.w3.org/1999/xhtml" class="fingerprint-piece fingerprint-right-piece"><img src="fingerprint-seal.png" alt="" /></div>
         </foreignObject>
-
         <g class="seal-botanical" fill="none" stroke="#d8b46a" stroke-linecap="round" stroke-linejoin="round">
           <path stroke-width="2.2" d="M94 103C65 76 52 48 63 25"/>
           <path stroke-width="2.2" d="M266 103C295 76 308 48 297 25"/>
@@ -72,13 +69,6 @@
   </header>
 
   <main id="site" class="site locked">
-    <div class="story-vines" aria-hidden="true">
-      <div class="vine-asset vine-left"><img src="vine-left.svg" alt=""></div>
-      <div class="vine-asset vine-right"><img src="vine-right.svg" alt=""></div>
-      <div class="vine-merge-glow"></div>
-      <img class="vine-lotus" src="lotus.svg" alt="">
-    </div>
-
     <section class="hero section reveal">
       <div class="hero-overlay"></div>
       <div class="hero-content">
@@ -116,10 +106,7 @@
           <div class="eyebrow" data-fa="محل جشن" data-en="THE VENUE">محل جشن</div>
           <h2 data-fa="باغ اشکان" data-en="Ashkan Garden">باغ اشکان</h2>
           <p data-fa="شیراز – ابتدای جاده قلات – کوچه ۲ اقاقیا – باغ اشکان" data-en="Shiraz – Qalat Road entrance – Aghaghia Alley 2 – Ashkan Garden">شیراز – ابتدای جاده قلات – کوچه ۲ اقاقیا – باغ اشکان</p>
-          <a class="map-button" href="https://goo.gl/maps/8CHoFgn1onBiN2kY7?g_st=ac" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.1 7-12A7 7 0 0 0 5 10c0 5.9 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>
-            <span data-fa="مسیریابی با Google Maps" data-en="OPEN IN GOOGLE MAPS">مسیریابی با Google Maps</span>
-          </a>
+          <a class="map-button" href="https://goo.gl/maps/8CHoFgn1onBiN2kY7?g_st=ac" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.1 7-12A7 7 0 0 0 5 10c0 5.9 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg><span data-fa="مسیریابی با Google Maps" data-en="OPEN IN GOOGLE MAPS">مسیریابی با Google Maps</span></a>
         </div>
         <img class="venue-photo" src="photo-3.jpg" alt="Saeed & Niloufar" loading="lazy">
       </div>
@@ -140,53 +127,17 @@
     <section class="story-image full-bleed reveal"><img src="photo-4.jpg" alt="Saeed & Niloufar" loading="lazy"></section>
 
     <section class="gallery section reveal">
-      <div class="narrow gallery-head">
-        <div class="eyebrow" data-fa="از ما، برای شما" data-en="A FEW MOMENTS">از ما، برای شما</div>
-        <h2 data-fa="چند قاب از قصه‌ی ما" data-en="A few frames from our story">چند قاب از قصه‌ی ما</h2>
-      </div>
-      <div class="photo-flow">
-        <figure class="photo-blend reveal"><img src="photo-1.jpg" alt="Saeed & Niloufar" loading="lazy"></figure>
-        <figure class="photo-blend reveal"><img src="photo-5.jpg" alt="Saeed & Niloufar" loading="lazy"></figure>
-        <figure class="photo-blend reveal"><img src="photo-2.jpg" alt="Saeed & Niloufar" loading="lazy"></figure>
-      </div>
+      <div class="narrow gallery-head"><div class="eyebrow" data-fa="از ما، برای شما" data-en="A FEW MOMENTS">از ما، برای شما</div><h2 data-fa="چند قاب از قصه‌ی ما" data-en="A few frames from our story">چند قاب از قصه‌ی ما</h2></div>
+      <div class="photo-flow"><figure class="photo-blend reveal"><img src="photo-1.jpg" alt="Saeed & Niloufar" loading="lazy"></figure><figure class="photo-blend reveal"><img src="photo-5.jpg" alt="Saeed & Niloufar" loading="lazy"></figure><figure class="photo-blend reveal"><img src="photo-2.jpg" alt="Saeed & Niloufar" loading="lazy"></figure></div>
     </section>
 
-    <section class="story-ending section reveal">
-      <div class="narrow">
-        <div class="eyebrow" data-fa="قصه‌ی ما" data-en="OUR STORY">قصه‌ی ما</div>
-        <h2 data-fa="داستان ما از همین‌جا ادامه پیدا می‌کند." data-en="Our story begins.">داستان ما از همین‌جا ادامه پیدا می‌کند.</h2>
-      </div>
-    </section>
+    <section class="story-ending section reveal"><div class="narrow"><div class="eyebrow" data-fa="قصه‌ی ما" data-en="OUR STORY">قصه‌ی ما</div><h2 data-fa="داستان ما از همین‌جا ادامه پیدا می‌کند." data-en="Our story begins.">داستان ما از همین‌جا ادامه پیدا می‌کند.</h2></div></section>
 
-    <section class="countdown section reveal">
-      <div class="eyebrow" data-fa="تا جشن ما" data-en="UNTIL WE CELEBRATE">تا جشن ما</div>
-      <div class="count-grid">
-        <div><strong id="days">00</strong><span data-fa="روز" data-en="DAYS">روز</span></div>
-        <div><strong id="hours">00</strong><span data-fa="ساعت" data-en="HOURS">ساعت</span></div>
-        <div><strong id="minutes">00</strong><span data-fa="دقیقه" data-en="MINUTES">دقیقه</span></div>
-        <div><strong id="seconds">00</strong><span data-fa="ثانیه" data-en="SECONDS">ثانیه</span></div>
-      </div>
-    </section>
+    <section class="countdown section reveal"><div class="eyebrow" data-fa="تا جشن ما" data-en="UNTIL WE CELEBRATE">تا جشن ما</div><div class="count-grid"><div><strong id="days">00</strong><span data-fa="روز" data-en="DAYS">روز</span></div><div><strong id="hours">00</strong><span data-fa="ساعت" data-en="HOURS">ساعت</span></div><div><strong id="minutes">00</strong><span data-fa="دقیقه" data-en="MINUTES">دقیقه</span></div><div><strong id="seconds">00</strong><span data-fa="ثانیه" data-en="SECONDS">ثانیه</span></div></div></section>
 
-    <section class="rsvp section reveal" id="rsvp">
-      <div class="narrow">
-        <div class="eyebrow" data-fa="تأیید حضور" data-en="RSVP">تأیید حضور</div>
-        <h2 data-fa="آیا در جشن ما کنارمان هستید؟" data-en="Will you join us?">آیا در جشن ما کنارمان هستید؟</h2>
-        <p data-fa="لطفاً پاسخ خود را برای ما ثبت کنید." data-en="Please let us know if we can count you in.">لطفاً پاسخ خود را برای ما ثبت کنید.</p>
-        <button class="rsvp-open" id="rsvpOpen" type="button" data-fa="ثبت پاسخ حضور" data-en="RSVP NOW">ثبت پاسخ حضور</button>
-      </div>
-    </section>
+    <section class="rsvp section reveal" id="rsvp"><div class="narrow"><div class="eyebrow" data-fa="تأیید حضور" data-en="RSVP">تأیید حضور</div><h2 data-fa="آیا در جشن ما کنارمان هستید؟" data-en="Will you join us?">آیا در جشن ما کنارمان هستید؟</h2><p data-fa="لطفاً پاسخ خود را برای ما ثبت کنید." data-en="Please let us know if we can count you in.">لطفاً پاسخ خود را برای ما ثبت کنید.</p><button class="rsvp-open" id="rsvpOpen" type="button" data-fa="ثبت پاسخ حضور" data-en="RSVP NOW">ثبت پاسخ حضور</button></div></section>
 
-    <section class="closing section reveal">
-      <div class="narrow">
-        <img class="closing-logo" src="logo.png" alt="S & N">
-        <div class="eyebrow" data-fa="با عشق" data-en="WITH LOVE">با عشق</div>
-        <h2 data-fa="منتظر دیدار شما هستیم." data-en="We can't wait to see you.">منتظر دیدار شما هستیم.</h2>
-        <p data-fa="سعید رنجبر<br>&amp;<br>نیلوفر معصومی" data-en="Saeed Ranjbar<br>&amp;<br>Niloufar Masoumi">سعید رنجبر<br>&amp;<br>نیلوفر معصومی</p>
-        <div class="final-thanks" data-fa="از اینکه بخشی از قصه‌ی ما هستید، ممنونیم." data-en="Thank you for being part of our story.">از اینکه بخشی از قصه‌ی ما هستید، ممنونیم.</div>
-        <small data-fa="۱۰ شهریور ۱۴۰۵ · شیراز" data-en="31 August 2026 · Shiraz">۱۰ شهریور ۱۴۰۵ · شیراز</small>
-      </div>
-    </section>
+    <section class="closing section reveal"><div class="narrow"><img class="closing-logo" src="logo.png" alt="S & N"><div class="eyebrow" data-fa="با عشق" data-en="WITH LOVE">با عشق</div><h2 data-fa="منتظر دیدار شما هستیم." data-en="We can't wait to see you.">منتظر دیدار شما هستیم.</h2><p data-fa="سعید رنجبر<br>&amp;<br>نیلوفر معصومی" data-en="Saeed Ranjbar<br>&amp;<br>Niloufar Masoumi">سعید رنجبر<br>&amp;<br>نیلوفر معصومی</p><div class="final-thanks" data-fa="از اینکه بخشی از قصه‌ی ما هستید، ممنونیم." data-en="Thank you for being part of our story.">از اینکه بخشی از قصه‌ی ما هستید، ممنونیم.</div><small data-fa="۱۰ شهریور ۱۴۰۵ · شیراز" data-en="31 August 2026 · Shiraz">۱۰ شهریور ۱۴۰۵ · شیراز</small></div></section>
   </main>
 
   <div id="rsvpModal" class="modal" aria-hidden="true">
@@ -197,22 +148,14 @@
       <h2 id="rsvpTitle" data-fa="پاسخ شما برای ما ارزشمند است." data-en="Your answer means a lot to us.">پاسخ شما برای ما ارزشمند است.</h2>
       <form id="rsvpForm">
         <input type="hidden" name="_subject" value="S&N Wedding RSVP — 31 August 2026">
-        <input type="hidden" name="_template" value="table">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="language" id="formLanguage" value="Persian">
-        <input type="hidden" name="visit_time" id="visitTime">
-        <input type="hidden" name="site_total_views" id="siteTotalViews">
+        <input type="hidden" name="_template" value="table"><input type="hidden" name="_captcha" value="false"><input type="hidden" name="language" id="formLanguage" value="Persian"><input type="hidden" name="visit_time" id="visitTime"><input type="hidden" name="site_total_views" id="siteTotalViews">
         <input type="text" name="_honey" tabindex="-1" autocomplete="off" class="honeypot">
         <label><span data-fa="نام و نام خانوادگی" data-en="FULL NAME">نام و نام خانوادگی</span><input name="name" required autocomplete="name"></label>
         <label><span data-fa="شماره تماس" data-en="PHONE">شماره تماس</span><input name="phone" required inputmode="tel" autocomplete="tel"></label>
         <label><span data-fa="تعداد مهمانان" data-en="NUMBER OF GUESTS">تعداد مهمانان</span><select name="guests" required><option value="" selected disabled data-fa="انتخاب کنید" data-en="Select">انتخاب کنید</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5+</option></select></label>
-        <fieldset><legend data-fa="حضور شما" data-en="ATTENDANCE">حضور شما</legend>
-          <label class="radio"><input type="radio" name="attendance" value="yes" required><span data-fa="با عشق می‌آیم" data-en="YES, I'LL BE THERE">با عشق می‌آیم</span></label>
-          <label class="radio"><input type="radio" name="attendance" value="no"><span data-fa="این بار نمی‌توانم" data-en="SORRY, I CAN'T">این بار نمی‌توانم</span></label>
-        </fieldset>
+        <fieldset><legend data-fa="حضور شما" data-en="ATTENDANCE">حضور شما</legend><label class="radio"><input type="radio" name="attendance" value="yes" required><span data-fa="با عشق می‌آیم" data-en="YES, I'LL BE THERE">با عشق می‌آیم</span></label><label class="radio"><input type="radio" name="attendance" value="no"><span data-fa="این بار نمی‌توانم" data-en="SORRY, I CAN'T">این بار نمی‌توانم</span></label></fieldset>
         <label><span data-fa="پیام شما (اختیاری)" data-en="MESSAGE (OPTIONAL)">پیام شما (اختیاری)</span><textarea name="message" rows="3"></textarea></label>
-        <button class="submit-rsvp" id="submitRsvp" type="submit" data-fa="ثبت و ارسال" data-en="SUBMIT RSVP">ثبت و ارسال</button>
-        <div id="rsvpStatus" class="rsvp-status" role="status"></div>
+        <button class="submit-rsvp" id="submitRsvp" type="submit" data-fa="ثبت و ارسال" data-en="SUBMIT RSVP">ثبت و ارسال</button><div id="rsvpStatus" class="rsvp-status" role="status"></div>
       </form>
     </div>
   </div>
