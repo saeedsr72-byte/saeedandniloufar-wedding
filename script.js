@@ -194,57 +194,64 @@
     document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
   }
 
-  // Botanical vines — start EXACTLY at the bottom of the last full-bleed photo.
-  // They stay on the outer edges through the photo sequence. Only after the
-  // final photo do the two sides slowly travel inward and finish together
-  // before the OUR STORY section. No flower is introduced in this step.
+  // Botanical vines — V8.2 lower-vine fix.
+  // IMPORTANT: everything before the last gallery photo keeps the existing
+  // artwork and motion. The only change here is that the scene is laid out
+  // from the ACTUAL loaded image geometry, so the vines continue below the
+  // last photo instead of stopping early when lazy-loaded images change height.
   const vineScene = document.querySelector('.story-vines');
   const vineAssets = Array.from(document.querySelectorAll('.vine-asset'));
 
   if (vineScene && vineAssets.length) {
     const lastPhoto = document.querySelector('.gallery .photo-blend:last-child');
     const storyEnding = document.querySelector('.story-ending');
+    const siteRoot = document.querySelector('.site');
     let startY = 0;
     let convergeStartY = 1;
     let endY = 1;
     let raf = 0;
+    let layoutRaf = 0;
 
     const pageY = (el) => {
       const rect = el.getBoundingClientRect();
       return rect.top + window.scrollY;
     };
 
+    const pageBottom = (el) => {
+      const rect = el.getBoundingClientRect();
+      return rect.bottom + window.scrollY;
+    };
+
     const layoutVines = () => {
+      layoutRaf = 0;
       if (!lastPhoto || !storyEnding) return;
 
-      // Keep the existing edge vines exactly as they are from A FEW MOMENTS
-      // through the entire gallery. The lower movement begins only after the
-      // last gallery image has actually finished.
+      // Preserve the original starting point exactly.
       const firstPhoto = document.querySelectorAll('.story-image.full-bleed')[1];
       startY = firstPhoto
-        ? pageY(firstPhoto) + firstPhoto.getBoundingClientRect().height
+        ? pageBottom(firstPhoto)
         : pageY(lastPhoto);
 
-      // IMPORTANT: gallery images are lazy-loaded. offsetHeight can change
-      // after the first layout pass, so this value is recalculated on image
-      // load/resize below.
-      convergeStartY = pageY(lastPhoto) + lastPhoto.getBoundingClientRect().height;
+      // This MUST be measured after the final lazy-loaded image has its real
+      // height. Otherwise the convergence point is calculated too early.
+      convergeStartY = pageBottom(lastPhoto);
 
-      // The final approach lives in the OUR STORY opening space, not inside
-      // the gallery. This gives the vines enough vertical distance to move
-      // inward slowly and meet naturally before we later add the lotus.
-      const storyTop = pageY(storyEnding);
-      const available = Math.max(0, storyEnding.getBoundingClientRect().height);
-      endY = storyTop + Math.min(available * .42, window.innerHeight * .72);
-
-      // If the layout is unusually compact, still preserve a usable approach
-      // distance rather than collapsing the animation into a few pixels.
-      if (endY <= convergeStartY + 80) {
-        endY = convergeStartY + Math.max(280, window.innerHeight * .62);
+      // Let the vines travel through the complete OUR STORY section.
+      // They finish at its bottom, not at an arbitrary percentage of it.
+      endY = pageBottom(storyEnding);
+      if (endY <= convergeStartY) {
+        endY = convergeStartY + Math.max(360, window.innerHeight * 1.15);
       }
 
-      vineScene.style.top = `${startY}px`;
+      // .story-vines is absolutely positioned inside .site, so use coordinates
+      // relative to that containing block rather than raw document coordinates.
+      const rootY = siteRoot ? pageY(siteRoot) : 0;
+      vineScene.style.top = `${Math.max(0, startY - rootY)}px`;
       vineScene.style.height = `${Math.max(1, endY - startY)}px`;
+    };
+
+    const requestLayout = () => {
+      if (!layoutRaf) layoutRaf = window.requestAnimationFrame(layoutVines);
     };
 
     const updateVines = () => {
@@ -258,12 +265,13 @@
         (window.scrollY + lead - convergeStartY) / Math.max(1, endY - convergeStartY)
       ));
 
-      // Reveal the original SVG artwork exactly as before.
+      // Keep the original SVG artwork and its existing reveal animation.
       vineAssets.forEach((asset, index) => {
         const local = Math.max(0, Math.min(1, revealP * 1.025 - index * .012));
         asset.style.clipPath = `inset(0 0 ${((1 - local) * 100).toFixed(2)}% 0)`;
 
-        // 0 until the last image is gone, then a very restrained inward drift.
+        // Same restrained inward drift as before; only the measured travel
+        // distance is now based on the real page geometry.
         const eased = convergeP * convergeP * (3 - 2 * convergeP);
         const edgeGap = Math.min(41, window.innerWidth * .065);
         const shift = eased * Math.max(0, window.innerWidth * .5 - edgeGap);
@@ -281,22 +289,21 @@
       updateVines();
     };
 
-    // Re-layout after lazy gallery images arrive. This is the main fix for the
-    // missing lower section: the previous measurements were sometimes taken
-    // before the final photo had a real height.
-    const watchedImages = Array.from(document.querySelectorAll('.gallery img, .story-image img'));
-    watchedImages.forEach(img => {
-      if (!img.complete) img.addEventListener('load', refreshVines, { once:true });
+    // Initial pass.
+    refreshVines();
+
+    // The gallery images are lazy-loaded. Re-layout whenever their actual
+    // dimensions change — this is the key fix for the disappearing lower vine.
+    document.querySelectorAll('.story-image img, .gallery img').forEach((img) => {
+      if (!img.complete) img.addEventListener('load', requestLayout, { passive:true });
     });
 
-    let vineResizeObserver = null;
     if ('ResizeObserver' in window) {
-      vineResizeObserver = new ResizeObserver(() => refreshVines());
-      [lastPhoto, storyEnding, document.querySelector('.gallery')].filter(Boolean)
-        .forEach(el => vineResizeObserver.observe(el));
+      const vineResizeObserver = new ResizeObserver(requestLayout);
+      [lastPhoto, storyEnding].forEach((el) => el && vineResizeObserver.observe(el));
+      document.querySelectorAll('.gallery .photo-blend').forEach((el) => vineResizeObserver.observe(el));
     }
 
-    refreshVines();
     window.addEventListener('load', refreshVines, { once:true });
     window.addEventListener('resize', refreshVines, { passive:true });
     window.addEventListener('scroll', requestVineUpdate, { passive:true });
