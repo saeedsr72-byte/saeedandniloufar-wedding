@@ -40,7 +40,7 @@
     const left = document.createElement('div'); const right = document.createElement('div'); left.className = 'gate-fp-half gate-fp-left'; right.className = 'gate-fp-half gate-fp-right';
     const leftImg = document.createElement('img'); const rightImg = document.createElement('img'); leftImg.src = 'fingerprint-seal.png'; rightImg.src = 'fingerprint-seal.png'; leftImg.alt = ''; rightImg.alt = ''; left.appendChild(leftImg); right.appendChild(rightImg); stage.append(left, right); fingerprintButton.appendChild(stage);
     const syncFingerprint = () => stage.classList.toggle('split', fingerprintGate.classList.contains('split'));
-    new MutationObserver(syncFingerprint).observe(fingerprintGate, { attributes:true, attributeFilter:['class'] }); syncFingerprint();
+    new MutationObserver(syncFingerprint).observe(fingerprintGate, { attributes: true, attributeFilter: ['class'] }); syncFingerprint();
   }
   openButton.onclick = openInvitation;
   setLanguage(lang); lockGate();
@@ -48,7 +48,7 @@
   function resolvePersianEventDate() {
     const formatter = new Intl.DateTimeFormat('en-US-u-ca-persian', { timeZone: 'Asia/Tehran', year: 'numeric', month: 'numeric', day: 'numeric' });
     const start = Date.UTC(2026, 0, 1, 12, 0, 0);
-    for (let i = 0; i < 400; i++) { const d = new Date(start + i * 86400000); const parts = formatter.formatToParts(d); const y = Number(parts.find(p => p.type === 'year')?.value); const m = Number(parts.find(p => p.type === 'month')?.value); const day = Number(parts.find(p => p.type === 'day')?.value); if (y === 1405 && m === 6 && day === 10) return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`; }
+    for (let i = 0; i < 400; i++) { const d = new Date(start + i * 86400000); const parts = formatter.formatToParts(d); const y = Number(parts.find(p => p.type === 'year')?.value); const m = Number(parts.find(p => p.type === 'month')?.value); const day = Number(parts.find(p => p.type === 'day')?.value); if (y === 1405 && m === 6 && day === 10) return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`; }
     return '2026-08-31';
   }
   const eventDate = resolvePersianEventDate();
@@ -56,66 +56,6 @@
   function updateCountdown() { let diff = Math.max(0, countdownTarget - Date.now()); const days = Math.floor(diff / 86400000); diff %= 86400000; const hours = Math.floor(diff / 3600000); diff %= 3600000; const minutes = Math.floor(diff / 60000); const seconds = Math.floor((diff % 60000) / 1000); Object.entries({ days, hours, minutes, seconds }).forEach(([id, value]) => { const el = document.getElementById(id); if (el) el.textContent = String(value).padStart(2, '0'); }); }
   updateCountdown(); window.setInterval(updateCountdown, 1000);
   if ('IntersectionObserver' in window) { const observer = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } }), { threshold: 0.12, rootMargin: '0px 0px -7% 0px' }); document.querySelectorAll('.reveal').forEach(el => observer.observe(el)); } else document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
-
-  // VINES — final implementation: begin at the hero (first photo), run parallel at both edges,
-  // and reveal to the true bottom. Height is written with !important because legacy CSS has
-  // height:100%!important on .vine-asset. This deliberately bypasses the old clip-path system.
-  const vineScene = document.querySelector('.story-vines');
-  const vineAssets = Array.from(document.querySelectorAll('.vine-asset'));
-  if (vineScene && vineAssets.length) {
-    let startRel = 0, endRel = 1, raf = 0;
-    const docY = el => { const r = el.getBoundingClientRect(); return r.top + window.scrollY; };
-    const layoutVines = () => {
-      const hero = document.querySelector('.hero');
-      if (!hero) return;
-      const siteTop = docY(site);
-      const heroTop = docY(hero);
-      const documentBottom = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
-      startRel = Math.max(0, heroTop - siteTop);
-      endRel = Math.max(startRel + 1200, documentBottom - siteTop);
-      vineScene.style.top = `${startRel}px`;
-      vineScene.style.height = `${endRel - startRel}px`;
-      vineScene.style.bottom = 'auto';
-      vineScene.style.overflow = 'visible';
-      vineAssets.forEach(asset => {
-        asset.style.setProperty('top', '0px', 'important');
-        asset.style.setProperty('height', '0px', 'important');
-        asset.style.setProperty('bottom', 'auto', 'important');
-        asset.style.setProperty('clip-path', 'none', 'important');
-        asset.style.setProperty('-webkit-clip-path', 'none', 'important');
-        asset.style.setProperty('overflow', 'hidden', 'important');
-        const img = asset.querySelector('img');
-        if (img) {
-          img.style.setProperty('position', 'absolute', 'important');
-          img.style.setProperty('top', '0px', 'important');
-          img.style.setProperty('left', '0px', 'important');
-          img.style.setProperty('right', 'auto', 'important');
-          img.style.setProperty('bottom', 'auto', 'important');
-          img.style.setProperty('width', '100%', 'important');
-          img.style.setProperty('height', `${endRel - startRel}px`, 'important');
-          img.style.setProperty('object-fit', 'fill', 'important');
-          img.style.setProperty('clip-path', 'none', 'important');
-          img.style.setProperty('-webkit-clip-path', 'none', 'important');
-        }
-      });
-    };
-    const updateVines = () => {
-      raf = 0;
-      const scrollRel = window.scrollY + window.innerHeight * 0.72 - docY(site);
-      const progress = Math.max(0, Math.min(1, (scrollRel - startRel) / Math.max(1, endRel - startRel)));
-      const revealHeight = Math.max(0, (endRel - startRel) * progress);
-      vineAssets.forEach(asset => asset.style.setProperty('height', `${revealHeight}px`, 'important'));
-    };
-    const requestVineUpdate = () => { if (!raf) raf = window.requestAnimationFrame(updateVines); };
-    const refreshVines = () => { layoutVines(); updateVines(); };
-    document.querySelectorAll('.gallery img, .story-image img, .venue-photo').forEach(img => { if (!img.complete) img.addEventListener('load', refreshVines, { once: true }); });
-    if ('ResizeObserver' in window) { const ro = new ResizeObserver(refreshVines); [site, document.querySelector('.gallery'), document.querySelector('.story-ending')].filter(Boolean).forEach(el => ro.observe(el)); }
-    refreshVines();
-    window.addEventListener('load', refreshVines, { once: true });
-    window.addEventListener('resize', refreshVines, { passive: true });
-    window.addEventListener('orientationchange', refreshVines, { passive: true });
-    window.addEventListener('scroll', requestVineUpdate, { passive: true });
-  }
 
   const rsvpOpen = document.getElementById('rsvpOpen'); const rsvpStatus = document.getElementById('rsvpStatus'); const visitTime = document.getElementById('visitTime'); const siteTotalViews = document.getElementById('siteTotalViews'); const formLanguage = document.getElementById('formLanguage');
   function tehranTime() { return new Date().toLocaleString('en-GB', { timeZone: 'Asia/Tehran', hour12: false }) + ' (Tehran)'; }
