@@ -90,44 +90,85 @@
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
   } else document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
 
-  // VINES: begin at the TOP of the first story image, stay parallel on both edges,
-  // and reveal continuously to the true bottom. Both clip-path properties are
-  // written explicitly for Safari/iPadOS.
+  // VINES — hard reset of the previous implementation.
+  // Start at the TOP of the HERO (the first photo on the page), keep both vines
+  // parallel on the left/right edges, and reveal them continuously to the bottom.
+  // The wrapper itself is revealed by height, avoiding clip-path quirks on Safari.
   const vineScene = document.querySelector('.story-vines');
   const vineAssets = Array.from(document.querySelectorAll('.vine-asset'));
   if (vineScene && vineAssets.length) {
-    let startRel = 0, endRel = 1, raf = 0;
+    let startRel = 0;
+    let endRel = 1;
+    let raf = 0;
+
     const docY = el => { const r = el.getBoundingClientRect(); return r.top + window.scrollY; };
+
     const layoutVines = () => {
-      const firstPhoto = document.querySelector('.story-image.full-bleed');
-      if (!firstPhoto) return;
+      const hero = document.querySelector('.hero');
+      if (!hero) return;
       const siteTop = docY(site);
-      const photoTop = docY(firstPhoto);
+      const heroTop = docY(hero);
       const documentBottom = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
-      startRel = Math.max(0, photoTop - siteTop);
+
+      // The hero is the first photo/visual section, so the vine begins at its top edge.
+      startRel = Math.max(0, heroTop - siteTop);
       endRel = Math.max(startRel + 1200, documentBottom - siteTop);
+
       vineScene.style.top = `${startRel}px`;
       vineScene.style.height = `${endRel - startRel}px`;
       vineScene.style.bottom = 'auto';
+      vineScene.style.overflow = 'visible';
+
       vineAssets.forEach(asset => {
-        const img = asset.querySelector('img');
+        asset.style.top = '0';
+        asset.style.bottom = 'auto';
+        asset.style.height = '0px';
         asset.style.clipPath = 'none';
         asset.style.webkitClipPath = 'none';
-        if (img) { img.style.clipPath = 'inset(0 0 100% 0)'; img.style.webkitClipPath = 'inset(0 0 100% 0)'; }
+        asset.style.overflow = 'hidden';
+
+        const img = asset.querySelector('img');
+        if (img) {
+          img.style.position = 'absolute';
+          img.style.top = '0';
+          img.style.bottom = 'auto';
+          img.style.left = '0';
+          img.style.right = 'auto';
+          img.style.width = '100%';
+          img.style.height = `${endRel - startRel}px`;
+          img.style.objectFit = 'fill';
+          img.style.clipPath = 'none';
+          img.style.webkitClipPath = 'none';
+        }
       });
     };
+
     const updateVines = () => {
       raf = 0;
       const scrollRel = window.scrollY + window.innerHeight * 0.72 - docY(site);
       const progress = Math.max(0, Math.min(1, (scrollRel - startRel) / Math.max(1, endRel - startRel)));
-      const bottom = `${((1 - progress) * 100).toFixed(2)}%`;
-      vineAssets.forEach(asset => { const img = asset.querySelector('img'); if (!img) return; const clip = `inset(0 0 ${bottom} 0)`; img.style.clipPath = clip; img.style.webkitClipPath = clip; });
+      const revealHeight = Math.max(0, (endRel - startRel) * progress);
+
+      vineAssets.forEach(asset => {
+        asset.style.height = `${revealHeight}px`;
+      });
     };
+
     const requestVineUpdate = () => { if (!raf) raf = window.requestAnimationFrame(updateVines); };
     const refreshVines = () => { layoutVines(); updateVines(); };
-    document.querySelectorAll('.gallery img, .story-image img, .venue-photo').forEach(img => { if (!img.complete) img.addEventListener('load', refreshVines, { once: true }); });
-    if ('ResizeObserver' in window) { const ro = new ResizeObserver(refreshVines); [site, document.querySelector('.gallery'), document.querySelector('.story-ending')].filter(Boolean).forEach(el => ro.observe(el)); }
-    refreshVines(); window.addEventListener('load', refreshVines, { once: true }); window.addEventListener('resize', refreshVines, { passive: true }); window.addEventListener('orientationchange', refreshVines, { passive: true }); window.addEventListener('scroll', requestVineUpdate, { passive: true });
+
+    document.querySelectorAll('.gallery img, .story-image img, .venue-photo').forEach(img => {
+      if (!img.complete) img.addEventListener('load', refreshVines, { once: true });
+    });
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(refreshVines);
+      [site, document.querySelector('.gallery'), document.querySelector('.story-ending')].filter(Boolean).forEach(el => ro.observe(el));
+    }
+    refreshVines();
+    window.addEventListener('load', refreshVines, { once: true });
+    window.addEventListener('resize', refreshVines, { passive: true });
+    window.addEventListener('orientationchange', refreshVines, { passive: true });
+    window.addEventListener('scroll', requestVineUpdate, { passive: true });
   }
 
   const rsvpOpen = document.getElementById('rsvpOpen'); const rsvpStatus = document.getElementById('rsvpStatus'); const visitTime = document.getElementById('visitTime'); const siteTotalViews = document.getElementById('siteTotalViews'); const formLanguage = document.getElementById('formLanguage');
